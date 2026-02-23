@@ -10,7 +10,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 
 | Aspect | **LangChain Deep Agents** | **Claude Agent SDK** | **Codex SDK** |
 | ------ | ------------------------- | -------------------- | ------------- |
-| **Primary use case** | Interactive coding agent in temrminal or IDE; Build production agents programmatically with SDK | Build production agents programmatically | Interactive coding agent (CLI, desktop, IDE, cloud); Build production agents programmatically with SDK |
+| **Primary use case** | Interactive coding agent in terminal or IDE; Build production agents programmatically with SDK | Build production agents programmatically | Interactive coding agent (CLI, desktop, IDE, cloud); Build production agents programmatically with SDK |
 | **Model support** | Model-agnostic (Anthropic, OpenAI, and 100s others) | Claude models (Anthropic, Azure, Vertex AI, AWS Bedrock) | OpenAI models (GPT-5.3-Codex and variants) |
 | **License** | MIT | MIT (underlying Claude Code is proprietary) | Apache-2.0 |
 | **Architecture** | Python SDK, TypeScript SDK, and CLI | Python SDK, TypeScript SDK | TypeScript SDK, CLI, desktop app, IDE extension, cloud interface |
@@ -26,7 +26,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | Web Search | ✅ support for [third-party](/oss/deepagents/customization#tools) and [provider-native](/oss/integrations/chat/openai#web-search) | ✅ [WebSearch, WebFetch](https://platform.claude.com/docs/en/agent-sdk/overview#capabilities) | ✅ [`web_search`](https://developers.openai.com/codex/cli/features#web-search) |
 | Planning/Todos | ✅ [`write_todos`](/oss/deepagents/harness#planning-capabilities) | ✅ [Todo lists](https://platform.claude.com/docs/en/agent-sdk/todo-tracking) | ✅ [Plan before changes](https://developers.openai.com/codex/cli/features) |
 | Subagents | ✅ [Subagents](/oss/deepagents/subagents) | ✅ [Subagents](https://platform.claude.com/docs/en/agent-sdk/subagents) | ✅ [Multi-agent workflows](https://developers.openai.com/codex/concepts/multi-agents) (experimental) via MCP + Agents SDK |
-| MCP Support | ✅ | ✅ [MCP](https://platform.claude.com/docs/en/agent-sdk/mcp) | ✅ [MCP client](https://developers.openai.com/codex/mcp) and [server](https://developers.openai.com/codex/guides/agents-sdk/) |
+| MCP Client | ✅ | ✅ [MCP](https://platform.claude.com/docs/en/agent-sdk/mcp) | ✅ [MCP client](https://developers.openai.com/codex/mcp) |
 | Human-in-the-Loop | ✅ [Approve/edit/reject](/oss/deepagents/human-in-the-loop#decision-types) | ✅ [Permission modes](https://platform.claude.com/docs/en/agent-sdk/permissions) | ✅ [Approval modes](https://developers.openai.com/codex/cli/features#approval-modes) (Full Access, Read-only, Auto) |
 | Skills System | ✅ [Skills](/oss/deepagents/skills) | ✅ [Skills](https://platform.claude.com/docs/en/agent-sdk/skills) | ✅ [Skills](https://developers.openai.com/codex/skills) |
 | Additional instructions | ✅ [Memory](https://docs.langchain.com/oss/python/deepagents/customization#memory) | ✅ [CLAUDE.md files](https://platform.claude.com/docs/en/agent-sdk/modifying-system-prompts#method-1-claude-md-files-project-level-instructions) | ✅ [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) |
@@ -39,6 +39,10 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 <tr><td colspan="4"><strong>Architecture</strong></td></tr>
 | Composable Middleware | ✅ | [Hooks](https://platform.claude.com/docs/en/agent-sdk/hooks) | ❌ |
 | Virtual Filesystems | ✅ [Virtual filesystem](/oss/deepagents/harness#virtual-filesystem-access) with [pluggable backends](/oss/deepagents/backends) | ❌ | ❌ |
+<tr><td colspan="4"><strong>Server and hosting</strong></td></tr>
+| Production hosting | ✅ [LangGraph deployment](/oss/langgraph/deploy), self-hosted, or standalone | Build your own HTTP/WebSocket layer; run SDK in [containers](https://platform.anthropic.com/docs/en/agent-sdk/hosting) | [Codex App server](https://developers.openai.com/codex/app-server/) |
+| ACP server (IDE integration) | ✅ [ACP server](/oss/deepagents/acp) | ✅ (third-party) | ✅ (third-party) |
+| MCP server mode | ❌ | ❌ | ✅ [`codex mcp-server`](https://developers.openai.com/codex/guides/agents-sdk) |
 <tr><td colspan="4"><strong>State management</strong></td></tr>
 | Session Resume | ✅ | ✅ [Session management](https://platform.claude.com/docs/en/agent-sdk/sessions) | ✅ [Resume threads](https://developers.openai.com/codex/cli/features#resuming-conversations); SDK `resumeThread()` |
 | File Checkpointing | ✅ [Backends and checkpoints](/oss/deepagents/backends#built-in-backends) | ✅ [File checkpointing](https://platform.claude.com/docs/en/agent-sdk/file-checkpointing) | ✅ [Git checkpoints](https://developers.openai.com/codex/config-basic) |
