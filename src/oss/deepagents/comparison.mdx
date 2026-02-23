@@ -15,6 +15,26 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | **License** | MIT | MIT (underlying Claude Code is proprietary) | Apache-2.0 |
 | **Architecture** | Python SDK, TypeScript SDK, and CLI | Python SDK, TypeScript SDK | TypeScript SDK, CLI, desktop app, IDE extension, cloud interface |
 
+### Key differences
+
+**LangChain Deep Agents**:
+- **Model flexibility**: Use any provider (Anthropic, OpenAI, or 100+ others) and swap models without changing your agent logic
+- **Long-term memory**: Persist context across sessions and threads with the [Memory Store](/oss/deepagents/long-term-memory)
+- **Sandbox-as-tool pattern**: Run individual operations in isolated sandboxes while the agent runs outside, or run the full agent inside a sandbox
+- **Virtual filesystem**: Use pluggable backends (in-memory, disk, durable stores, sandboxes) for context and checkpoint management
+- **Production deployment**: Deploy via [LangGraph](/oss/langgraph/deploy) with built-in hosting options
+- **Observability**: Use [LangSmith](/langsmith/home) for native tracing and debugging
+
+**Claude Agent SDK**:
+- **Standardize on Claude**: First-class support for Claude models across Anthropic, Azure, Vertex AI, and AWS Bedrock
+- **Custom hosting**: Build your own HTTP/WebSocket layer and run the SDK in containers
+
+**Codex SDK**:
+- **Standardize on OpenAI**: GPT-5.3-Codex and OpenAI-specific tooling
+- **OS-level sandbox modes**: Use built-in `read-only`, `workspace-write`, or `danger-full-access` modes
+- **MCP server mode**: Expose your agent as an MCP server with `codex mcp-server`
+- **Observability**: Use [OpenAI Traces](https://developers.openai.com/codex/guides/agents-sdk/#trace-the-workflow)
+
 ## Feature comparison
 
 | Feature | **Deep Agents** | **Claude Agent SDK** | **Codex SDK** |
