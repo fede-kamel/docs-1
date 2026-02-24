@@ -650,7 +650,7 @@ The examples above use `wrap_model_call` to make **transient** updates - modifyi
 For **persistent** updates that modify state, you can:
 
 - Return a @[`Command`] from `wrap_model_call` / `wrapModelCall` to inject state updates from the model call layer (Python: use @[`ExtendedModelResponse`]; JavaScript: return `Command` directly).
-- Use life-cycle hooks like `before_model` or `after_model` to update the conversation history. See the [middleware documentation](/oss/langchain/middleware) for more details.
+- Use life-cycle hooks like `before_model`, `after_model`, or `wrap_tool_call` (for tool returns) to update the conversation history. See the [middleware documentation](/oss/langchain/middleware) for more details.
 
 See [State updates](/oss/langchain/middleware/custom#state-updates) for more information.
 </Note>
