@@ -353,7 +353,6 @@ The @[`Command`] flows through the graph's reducers, so updates are applied corr
 
 When multiple middleware layers return `ExtendedModelResponse`, their commands compose:
 
-- **Inner commands propagate outward:** Outer middleware always receives a plain `ModelResponse` from `handler()`. `ExtendedModelResponse` is unwrapped at composition boundaries.
 - **Commands are applied through reducers:** Each `Command` becomes a separate state update. For messages, this means they are additive.
 - **Outer wins on conflicts:** For non-reducer state fields, commands are applied inner-first, then outer. The outermost middleware's value takes precedence on conflicting keys.
 - **Retry-safe:** When outer middleware retries by calling `handler()` again, accumulated inner commands are cleared and re-collected.
