@@ -239,7 +239,7 @@ const createRetryMiddleware = (maxRetries: number = 3) => {
 Both node-style and wrap-style hooks can update agent state. The mechanism differs:
 
 - **Node-style hooks** (`before_agent`, `before_model`, `after_model`, `after_agent`): Return a dict directly. The dict is merged into the agent state.
-- **Wrap-style hooks** (`wrap_model_call`): Return @[`ExtendedModelResponse`] with a @[`Command`] to inject state updates alongside the model response. Use this when you need to track or update state based on logic that runs during the model call, such as summarization trigger points, usage metadata, or custom fields calculated from the request or response.
+- **Wrap-style hooks** (`wrap_model_call`, `wrap_tool_call`): For model calls, return @[`ExtendedModelResponse`] with a @[`Command`] to inject state updates alongside the model response. For tool calls, return a @[`Command`] directly. Use these when you need to track or update state based on logic that runs during the model or tool call, such as summarization trigger points, usage metadata, or custom fields calculated from the request or response.
 
 ### Node-style hooks
 
