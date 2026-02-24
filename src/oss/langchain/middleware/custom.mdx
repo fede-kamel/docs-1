@@ -355,7 +355,7 @@ When multiple middleware layers return `ExtendedModelResponse`, their commands c
 
 - **Commands are applied through reducers:** Each `Command` becomes a separate state update. For messages, this means they are additive.
 - **Outer wins on conflicts:** For non-reducer state fields, commands are applied inner-first, then outer. The outermost middleware's value takes precedence on conflicting keys.
-- **Retry-safe:** When outer middleware retries by calling `handler()` again, accumulated inner commands are cleared and re-collected.
+- **Retry-safe:** If the outer middleware implements logic that can result in multiple calls to `handler()` again (for example, retry logic), commands from earlier calls are discarded.
 
 :::python
 
