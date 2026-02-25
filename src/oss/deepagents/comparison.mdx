@@ -21,7 +21,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 **LangChain Deep Agents**:
 - **Model flexibility**: Use any provider (Anthropic, OpenAI, or 100+ others) and swap models without changing your agent logic
 - **Long-term memory**: Persist context across sessions and threads with the [Memory Store](/oss/deepagents/long-term-memory)
-- **Sandbox-as-tool pattern**: Run individual operations in isolated sandboxes while the agent runs outside, or run the full agent inside a sandbox
+- **Sandbox-as-tool pattern**: Run individual operations in isolated sandboxes from different providers while the agent runs outside, or run the full agent inside a sandbox
 - **Virtual filesystem**: Use pluggable backends (in-memory, disk, durable stores, sandboxes) for context and checkpoint management
 - **Production deployment**: Deploy via [LangSmith](/oss/langgraph/deploy) or self-host with the Agent Server
 - **Observability**: Use [LangSmith](/langsmith/home) for native tracing and debugging
@@ -61,9 +61,9 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | Composable Middleware | ✅ | [Hooks](https://platform.claude.com/docs/en/agent-sdk/hooks) | ❌ |
 | Virtual Filesystems | ✅ [Virtual filesystem](/oss/deepagents/harness#virtual-filesystem-access) with [pluggable backends](/oss/deepagents/backends) | ❌ | ❌ |
 <tr><td colspan="4"><strong>Deployment</strong></td></tr>
-| Production hosting | ✅ [LangGraph deployment](/oss/langgraph/deploy), self-hosted, or standalone | Build your own HTTP/WebSocket layer; run SDK in [containers](https://platform.anthropic.com/docs/en/agent-sdk/hosting) | [Codex App server](https://developers.openai.com/codex/app-server/) |
+| Production hosting | ✅ [LangGraph deployment](/oss/langgraph/deploy), self-hosted, or standalone | Build your own HTTP/WebSocket layer; run SDK in [containers](https://platform.anthropic.com/docs/en/agent-sdk/hosting) | ❌ |
 <tr><td colspan="4"><strong>Supported protocols</strong></td></tr>
-| ACP server (IDE integration) | ✅ [ACP server](/oss/deepagents/acp) | ✅ (third-party) | ✅ (third-party) |
+| ACP server (IDE integration) | ✅ [ACP server](/oss/deepagents/acp) (python only) | ✅ (third-party) | ✅ (third-party) |
 | MCP server mode | [MCP endpoint through Agent Server](/langsmith/server-mcp#mcp-endpoint-in-agent-server) | ❌ | ✅ [`codex mcp-server`](https://developers.openai.com/codex/guides/agents-sdk) |
 | A2A endpoint | ✅ [A2A endpoint in Agent Server](https://docs.langchain.com/langsmith/server-a2a#a2a-endpoint-in-agent-server) | ✅ | ❌ |
 <tr><td colspan="4"><strong>State management</strong></td></tr>
