@@ -332,7 +332,7 @@ import { createMiddleware } from "langchain";
 import { Command } from "@langchain/langgraph";
 
 const usageTrackingStateSchema = z.object({
-  last_model_call_tokens: z.number().optional(),
+  lastModelCallTokens: z.number().optional(),
 });
 
 const trackUsage = createMiddleware({
@@ -340,7 +340,7 @@ const trackUsage = createMiddleware({
   stateSchema: usageTrackingStateSchema,
   wrapModelCall: async (request, handler) => {
     const response = await handler(request);
-    return new Command({ update: { last_model_call_tokens: 150 } });
+    return new Command({ update: { lastModelCallTokens: 150 } });
   },
 });
 ```
