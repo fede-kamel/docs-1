@@ -59,6 +59,29 @@ In order to track progress of the backfill, you can view logs for your evaluator
 
 View this guide to configure an [LLM-as-a-judge evaluator](/langsmith/llm-as-judge?mode=ui#pre-built-evaluators-1).
 
+#### 7. (Optional) Map multimodal content to evaluator
+
+If your traces contain multimodal content like images, audio, or documents, you can include this content in your evaluator prompts. There are two approaches:
+
+**Using base64-encoded content from traces**
+
+If your application logs multimodal content as base64-encoded data in the trace (for example, in the input or output of a run), you can reference this content directly in your evaluator prompt using template variables. The evaluator will extract the base64 data from the trace and pass it to the LLM.
+
+**Using attachments from traces**
+
+Similar to [offline evaluations with attachments](/langsmith/evaluate-with-attachments), you can use attachments from your traces in online evaluations:
+
+1. When adding traces to LangSmith, include attachments (images, audio files, PDFs, etc.) using the SDK
+2. In your evaluator configuration, click the file icon in the evaluator message where you want to add multimodal content
+3. Navigate to the **Template variables** tab
+4. Add a template variable for the attachment(s) you want to include from the trace
+
+The evaluator can then access these attachments when evaluating the trace. This is useful for evaluators that need to:
+
+* Verify if an image description matches the actual image in the trace
+* Check if a transcription accurately reflects the audio input
+* Validate if extracted text from a document is correct
+
 ## Video guide
 <iframe
   className="w-full aspect-video rounded-xl"
