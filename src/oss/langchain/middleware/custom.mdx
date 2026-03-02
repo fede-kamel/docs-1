@@ -360,14 +360,30 @@ When multiple middleware layers return `ExtendedModelResponse`, their commands c
 :::python
 
 ```python
+from typing import Annotated, Callable
+
 from langchain.agents.middleware import (
     AgentMiddleware,
+    AgentState,
     ExtendedModelResponse,
     ModelRequest,
     ModelResponse,
 )
+from langchain.messages import SystemMessage
 from langgraph.types import Command
-from typing import Callable
+from typing_extensions import NotRequired
+
+
+def _last_wins(_a: str, b: str) -> str:
+    """Reducer: last writer wins (outer overwrites inner)."""
+    return b
+
+
+class CustomMiddlewareState(AgentState):
+    """Agent state: trace_layer uses last-wins (outer wins), messages use additive reducer."""
+
+    # Non-reducer field with last-wins: both middleware write; outermost value wins
+    trace_layer: NotRequired[Annotated[str, _last_wins]]
 
 
 class OuterMiddleware(AgentMiddleware):
@@ -379,23 +395,29 @@ class OuterMiddleware(AgentMiddleware):
         response = handler(request)
         return ExtendedModelResponse(
             model_response=response,
-            command=Command(update={"outer_key": "val"}),
+            command=Command(update={
+                "trace_layer": "outer",
+                "messages": [SystemMessage(content="[Outer ran]")],
+            }),
         )
 
 
 class InnerMiddleware(AgentMiddleware):
+    """Adds trace_layer and message. Outer adds to same keys; trace_layer: outer wins, messages: additive."""
+
     def wrap_model_call(
         self,
         request: ModelRequest,
         handler: Callable[[ModelRequest], ModelResponse],
-    ) -> ExtendedModelResponse:
+    ):
         response = handler(request)
         return ExtendedModelResponse(
             model_response=response,
-            command=Command(update={"inner_key": "val"}),
+            command=Command(update={
+                "trace_layer": "inner",
+                "messages": [SystemMessage(content="[Inner ran]")],
+            }),
         )
-
-# Final state merges both commands: {"inner_key": "val", "outer_key": "val"}
 ```
 
 :::
@@ -403,26 +425,52 @@ class InnerMiddleware(AgentMiddleware):
 :::js
 
 ```typescript
+import * as z from "zod";
 import { createMiddleware } from "langchain";
 import { Command } from "@langchain/langgraph";
+import { withLangGraph } from "@langchain/langgraph/zod";
+import { AIMessage, SystemMessage } from "@langchain/core/messages";
+
+/** Last-wins reducer: when both middleware write, outer overwrites inner. */
+const traceLayerSchema = withLangGraph(z.string().optional(), {
+  reducer: {
+    fn: (_a: string | undefined, b: string) => b,
+  },
+  default: () => undefined,
+});
+
+/** Agent state: trace_layer uses last-wins (outer wins), messages use additive reducer. */
+const customMiddlewareStateSchema = z.object({
+  trace_layer: traceLayerSchema,
+});
 
 const outerMiddleware = createMiddleware({
-  name: "outer",
-  wrapModelCall: async (request, handler) => {
-    const response = await handler(request);
-    return new Command({ update: { outer_key: "val" } });
+  name: "OuterMiddleware",
+  stateSchema: customMiddlewareStateSchema,
+  wrapModelCall: async (_request, handler) => {
+    await handler(_request);
+    return new Command({
+      update: {
+        trace_layer: "outer",
+        messages: [new SystemMessage({ content: "[Outer ran]" })],
+      },
+    });
   },
 });
 
 const innerMiddleware = createMiddleware({
-  name: "inner",
-  wrapModelCall: async (request, handler) => {
-    const response = await handler(request);
-    return new Command({ update: { inner_key: "val" } });
+  name: "InnerMiddleware",
+  stateSchema: customMiddlewareStateSchema,
+  wrapModelCall: async (_request, handler) => {
+    await handler(_request);
+    return new Command({
+      update: {
+        trace_layer: "inner",
+        messages: [new SystemMessage({ content: "[Inner ran]" })],
+      },
+    });
   },
 });
-
-// Final state merges both commands: {"inner_key": "val", "outer_key": "val"}
 ```
 
 :::
