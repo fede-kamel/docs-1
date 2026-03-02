@@ -10,11 +10,13 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 
 | Aspect | **LangChain Deep Agents** | **Claude Agent SDK** | **Codex SDK** |
 | ------ | ------------------------- | -------------------- | ------------- |
-| **Primary use case** | Interactive coding agent in terminal or IDE; Build production agents programmatically with SDK | Build production agents programmatically | Interactive coding agent (CLI, desktop, IDE, cloud); Build production agents programmatically with SDK |
+| **Use cases** | Custom general-purpose agents (including coding) | Custom AI coding agents | Prebuilt coding agent that can execute coding tasks |
 | **Model support** | Model-agnostic (Anthropic, OpenAI, and 100s others) | Claude models (Anthropic, Azure, Vertex AI, AWS Bedrock) | OpenAI models (GPT-5.3-Codex and variants) |
-| **License** | MIT | MIT (underlying Claude Code is proprietary) | Apache-2.0 |
 | **Architecture** | Python SDK, TypeScript SDK, and CLI | Python SDK, TypeScript SDK | TypeScript SDK, CLI, desktop app, IDE extension, cloud interface |
+| **Deployment** | LangGraph Platform | Self-hosted | Prebuilt agent that can execute tasks |
 | **Frontend** | [Integration with React](https://docs.langchain.com/oss/javascript/langchain/streaming/frontend) | Server-side only | Server-side only |
+| **Observability** | Native tracing & evaluations | - | OpenAI traces & command-line evaluations |
+| **License** | MIT | MIT (underlying Claude Code is proprietary) | Apache-2.0 |
 
 ### Key differences
 
@@ -61,7 +63,9 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | Composable Middleware | ✅ | [Hooks](https://platform.claude.com/docs/en/agent-sdk/hooks) | ❌ |
 | Virtual Filesystems | ✅ [Virtual filesystem](/oss/deepagents/harness#virtual-filesystem-access) with [pluggable backends](/oss/deepagents/backends) | ❌ | ❌ |
 <tr><td colspan="4"><strong>Deployment</strong></td></tr>
-| Production hosting | ✅ [LangGraph deployment](/oss/langgraph/deploy), self-hosted, or standalone | Build your own HTTP/WebSocket layer; run SDK in [containers](https://platform.anthropic.com/docs/en/agent-sdk/hosting) | ❌ |
+| Production hosting | ✅ [LangGraph Platform](/oss/langgraph/deploy), self-hosted, or standalone | Build your own HTTP/WebSocket layer; run SDK in [containers](https://platform.anthropic.com/docs/en/agent-sdk/hosting) | ❌ |
+| Local execution environment | ✅ | ✅ | ✅ |
+| Cloud execution environment | ❌ | ❌ | ✅ |
 <tr><td colspan="4"><strong>Supported protocols</strong></td></tr>
 | ACP server (IDE integration) | ✅ [ACP server](/oss/deepagents/acp) (python only) | ✅ (third-party) | ✅ (third-party) |
 | MCP server mode | [MCP endpoint through Agent Server](/langsmith/server-mcp#mcp-endpoint-in-agent-server) | ❌ | ✅ [`codex mcp-server`](https://developers.openai.com/codex/guides/agents-sdk) |
@@ -72,6 +76,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | Time Travel (state branching) | ✅ | ✅ | ✅ |
 <tr><td colspan="4"><strong>Observability</strong></td></tr>
 | Native Tracing | ✅ [LangSmith](/langsmith/home) | ❌ | ✅ [OpenAI Traces](https://developers.openai.com/codex/guides/agents-sdk/#trace-the-workflow) |
+| Evaluations | ✅ [LangSmith](/langsmith/evaluation-concepts) | ❌ | [Evals patterns](https://developers.openai.com/blog/eval-skills) (Command-line with `codex exec --json`) |
 
 ## Notice a mistake?
 
