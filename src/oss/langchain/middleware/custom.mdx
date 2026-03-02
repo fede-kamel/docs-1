@@ -238,8 +238,15 @@ const createRetryMiddleware = (maxRetries: number = 3) => {
 
 Both node-style and wrap-style hooks can update agent state. The mechanism differs:
 
+:::python
 - **Node-style hooks** (`before_agent`, `before_model`, `after_model`, `after_agent`): Return a dict directly. The dict is applied to the agent state using the graph's reducers.
 - **Wrap-style hooks** (`wrap_model_call`, `wrap_tool_call`): For model calls, return @[`ExtendedModelResponse`] with a @[`Command`] to inject state updates alongside the model response. For tool calls, return a @[`Command`] directly. Use these when you need to track or update state based on logic that runs during the model or tool call, such as summarization trigger points, usage metadata, or custom fields calculated from the request or response.
+:::
+
+:::js
+- **Node-style hooks** (`beforeAgent`, `beforeModel`, `afterModel`, `afterAgent`): Return a dict directly. The dict is applied to the agent state using the graph's reducers.
+- **Wrap-style hooks** (`wrapModelCall`, `wrapToolCall`): For model calls, return a @[`Command`] directly to inject state updates alongside the model response. For tool calls, return a @[`Command`] directly. Use these when you need to track or update state based on logic that runs during the model or tool call, such as summarization trigger points, usage metadata, or custom fields calculated from the request or response.
+:::
 
 ### Node-style hooks
 
@@ -286,11 +293,11 @@ const incrementAfterModel = createMiddleware({
 
 :::
 
-### `ExtendedModelResponse`
-
-Return `ExtendedModelResponse` from `wrap_model_call` when you need to apply state updates:
+### Wrap-style hooks
 
 :::python
+
+Return a @[`ExtendedModelResponse`] with a @[`Command`] from `wrap_model_call` to inject state updates from the model call layer:
 
 ```python
 from typing import Callable
@@ -326,6 +333,8 @@ def track_usage(
 
 :::js
 
+Return a @[`Command`] directly from `wrapModelCall` to inject state updates from the model call layer:
+
 ```typescript
 import * as z from "zod";
 import { createMiddleware } from "langchain";
@@ -351,11 +360,25 @@ The @[`Command`] flows through the graph's reducers, so updates are applied corr
 
 #### Composition with multiple middleware
 
+:::python
+
 When multiple middleware layers return `ExtendedModelResponse`, their commands compose:
 
 - **Commands are applied through reducers:** Each `Command` becomes a separate state update. For messages, this means they are additive.
 - **Outer wins on conflicts:** For non-reducer state fields, commands are applied inner-first, then outer. The outermost middleware's value takes precedence on conflicting keys.
 - **Retry-safe:** If the outer middleware implements logic that can result in multiple calls to `handler()` again (for example, retry logic), commands from earlier calls are discarded.
+
+:::
+
+:::js
+
+When multiple middleware layers return responses, the framework passes on the last `AIMessage`s produced:
+
+- **AIMessage flows through:** Each middleware's `handler()` receives the `AIMessage` from the previous layer. When a middleware returns an `AIMessage`, that becomes the input to the next middleware's handler.
+- **Command without message updates is pass-through:** If a middleware returns a `Command` whose state update does not touch `messages`, the framework treats it as a no-op for message flow. The next middleware's handler receives the `AIMessage` from the middleware *before* the one that returned the Command.
+- **Reducer behavior and retry-safety:** Commands still apply through reducers (messages additive, outer wins on conflicts). Retry logic discards commands from earlier calls.
+
+:::
 
 :::python
 
