@@ -102,7 +102,8 @@ def main() -> int:
             if lang == "python":
                 result = subprocess.run(
                     ["uv", "run", "python", str(file_path)],
-                    check=False, cwd=str(repo_root),
+                    check=False,
+                    cwd=str(repo_root),
                     capture_output=True,
                     text=True,
                     timeout=TIMEOUT_SECONDS,
@@ -114,7 +115,8 @@ def main() -> int:
                 # TypeScript: run from code-samples dir so langchain resolve works
                 result = subprocess.run(
                     ["npx", "tsx", str(file_path.relative_to(code_samples_dir))],
-                    check=False, cwd=str(code_samples_dir),
+                    check=False,
+                    cwd=str(code_samples_dir),
                     capture_output=True,
                     text=True,
                     timeout=TIMEOUT_SECONDS,
