@@ -32,9 +32,11 @@ if __name__ == "__main__":
         tool_call_id: str = "test_call_123"
 
     mock_runtime = MockRuntime()
-    result = set_language.func("Spanish", mock_runtime)
+    # func exists at runtime, not in BaseTool type stubs
+    result = set_language.func("Spanish", mock_runtime)  # type: ignore[attr-defined]
 
     assert isinstance(result, Command)
+    assert result.update is not None
     assert result.update["preferred_language"] == "Spanish"
     assert len(result.update["messages"]) == 1
     assert result.update["messages"][0].content == "Language set to Spanish."
