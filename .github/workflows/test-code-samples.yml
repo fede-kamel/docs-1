@@ -1,6 +1,9 @@
 ---
 name: Test Code Samples
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     paths:
@@ -65,6 +68,7 @@ jobs:
           node-version: "20"
 
       - name: Test code samples
+        id: test
         run: |
           if [[ "${{ steps.files.outputs.run_all }}" == "true" ]]; then
             echo "Running all code samples..."
@@ -78,3 +82,25 @@ jobs:
             fi
             make test-code-samples FILES="$FILES"
           fi
+
+  # Creates a Linear issue when the weekly scheduled test fails.
+  # Required setup: Add LINEAR_API_KEY (repo secret) and LINEAR_TEAM_KEY (repo variable)
+  create-linear-ticket:
+    needs: test-code-samples
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Linear issue
+        uses: ctriolo/action-create-linear-issue@v1.3
+        with:
+          linear-api-key: ${{ secrets.LINEAR_API_KEY }}
+          linear-team-key: ${{ vars.LINEAR_TEAM_KEY }}
+          linear-issue-title: "Weekly code samples test failed"
+          linear-issue-description: |
+            The scheduled weekly test of all code samples in `src/code-samples/` failed.
+
+            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Please investigate and fix the failing samples.
+          linear-attachment-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          linear-attachment-title: "Failed workflow run"
