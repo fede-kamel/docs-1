@@ -2,6 +2,13 @@
 title: Tools
 ---
 
+import ToolReturnValuesPy from '/snippets/code-samples/tool-return-values-py.mdx';
+import ToolReturnValuesJs from '/snippets/code-samples/tool-return-values-js.mdx';
+import ToolReturnObjectPy from '/snippets/code-samples/tool-return-object-py.mdx';
+import ToolReturnObjectJs from '/snippets/code-samples/tool-return-object-js.mdx';
+import ToolReturnCommandPy from '/snippets/code-samples/tool-return-command-py.mdx';
+import ToolReturnCommandJs from '/snippets/code-samples/tool-return-command-js.mdx';
+
 Tools extend what [agents](/oss/langchain/agents) can do—letting them fetch real-time data, execute code, query external databases, and take actions in the world.
 
 Under the hood, tools are callable functions with well-defined inputs and outputs that get passed to a [chat model](/oss/langchain/models). The model decides when to invoke a tool based on the conversation context, and what input arguments to provide.
@@ -640,32 +647,13 @@ Return a string when the tool should provide plain text for the model to read an
 
 :::python
 
-```python
-from langchain.tools import tool
-
-@tool
-def get_weather(city: str) -> str:
-    """Get weather for a city."""
-    return f"It is currently sunny in {city}."
-```
+<ToolReturnValuesPy />
 
 :::
 
 :::js
 
-```ts
-import { tool } from "langchain";
-import * as z from "zod";
-
-const getWeather = tool(
-  ({ city }) => `It is currently sunny in ${city}.`,
-  {
-    name: "get_weather",
-    description: "Get weather for a city.",
-    schema: z.object({ city: z.string() }),
-  }
-);
-```
+<ToolReturnValuesJs />
 
 :::
 
@@ -683,40 +671,13 @@ Return an object (for example, a `dict`) when your tool produces structured data
 
 :::python
 
-```python
-from langchain.tools import tool
-
-@tool
-def get_weather_data(city: str) -> dict:
-    """Get structured weather data for a city."""
-    return {
-        "city": city,
-        "temperature_c": 22,
-        "conditions": "sunny",
-    }
-```
+<ToolReturnObjectPy />
 
 :::
 
 :::js
 
-```ts
-import { tool } from "langchain";
-import * as z from "zod";
-
-const getWeatherData = tool(
-  ({ city }) => ({
-    city,
-    temperature_c: 22,
-    conditions: "sunny",
-  }),
-  {
-    name: "get_weather_data",
-    description: "Get structured weather data for a city.",
-    schema: z.object({ city: z.string() }),
-  }
-);
-```
+<ToolReturnObjectJs />
 
 :::
 
@@ -736,55 +697,13 @@ If the model needs to see that the tool succeeded (for example, to confirm a pre
 
 :::python
 
-```python
-from langchain.tools import tool, ToolRuntime
-from langchain.messages import ToolMessage
-from langgraph.types import Command
-
-@tool
-def set_language(language: str, runtime: ToolRuntime) -> Command:
-    """Set the preferred response language."""
-    return Command(update={
-        "preferred_language": language,
-        "messages": [
-            ToolMessage(
-                content=f"Language set to {language}.",
-                tool_call_id=runtime.tool_call_id,
-            )
-        ],
-    })
-```
+<ToolReturnCommandPy />
 
 :::
 
 :::js
 
-```ts
-import { tool, ToolMessage, type ToolRuntime } from "langchain";
-import { Command } from "@langchain/langgraph";
-import * as z from "zod";
-
-const setLanguage = tool(
-  async ({ language }, config: ToolRuntime) => {
-    return new Command({
-      update: {
-        preferredLanguage: language,
-        messages: [
-          new ToolMessage({
-            content: `Language set to ${language}.`,
-            tool_call_id: config.toolCallId,
-          }),
-        ],
-      },
-    });
-  },
-  {
-    name: "set_language",
-    description: "Set the preferred response language.",
-    schema: z.object({ language: z.string() }),
-  }
-);
-```
+<ToolReturnCommandJs />
 
 :::
 
