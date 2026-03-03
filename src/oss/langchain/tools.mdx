@@ -626,6 +626,176 @@ const toolNode = new ToolNode([search, calculator]);
 ```
 :::
 
+### Tool return values
+
+You can choose different return values for your tools:
+
+- Return a `string` for human-readable results.
+- Return an `object` for structured results the model should parse.
+- Return a `Command` with optional message when you need to write to state.
+
+#### Return a string
+
+Return a string when the tool should provide plain text for the model to read and use in its next response.
+
+:::python
+
+```python
+from langchain.tools import tool
+
+@tool
+def get_weather(city: str) -> str:
+    """Get weather for a city."""
+    return f"It is currently sunny in {city}."
+```
+
+:::
+
+:::js
+
+```ts
+import { tool } from "langchain";
+import * as z from "zod";
+
+const getWeather = tool(
+  ({ city }) => `It is currently sunny in ${city}.`,
+  {
+    name: "get_weather",
+    description: "Get weather for a city.",
+    schema: z.object({ city: z.string() }),
+  }
+);
+```
+
+:::
+
+Behavior:
+
+- The return value is converted to a `ToolMessage`.
+- The model sees that text and decides what to do next.
+- No agent state fields are changed unless the model or another tool does so later.
+
+Use this when the result is naturally human-readable text.
+
+#### Return an object
+
+Return an object (for example, a `dict`) when your tool produces structured data that the model should inspect.
+
+:::python
+
+```python
+from langchain.tools import tool
+
+@tool
+def get_weather_data(city: str) -> dict:
+    """Get structured weather data for a city."""
+    return {
+        "city": city,
+        "temperature_c": 22,
+        "conditions": "sunny",
+    }
+```
+
+:::
+
+:::js
+
+```ts
+import { tool } from "langchain";
+import * as z from "zod";
+
+const getWeatherData = tool(
+  ({ city }) => ({
+    city,
+    temperature_c: 22,
+    conditions: "sunny",
+  }),
+  {
+    name: "get_weather_data",
+    description: "Get structured weather data for a city.",
+    schema: z.object({ city: z.string() }),
+  }
+);
+```
+
+:::
+
+Behavior:
+
+- The object is serialized and sent back as tool output.
+- The model can read specific fields and reason over them.
+- Like string returns, this does not directly update graph state.
+
+Use this when downstream reasoning benefits from explicit fields instead of free-form text.
+
+#### Return a Command
+
+Return a @[`Command`] when the tool needs to update graph state (for example, setting user preferences or app state).
+You can return a `Command` with or without including a `ToolMessage`.
+If the model needs to see that the tool succeeded (for example, to confirm a preference change), include a `ToolMessage` in the update, using `runtime.tool_call_id` for the `tool_call_id` parameter.
+
+:::python
+
+```python
+from langchain.tools import tool, ToolRuntime
+from langchain.messages import ToolMessage
+from langgraph.types import Command
+
+@tool
+def set_language(language: str, runtime: ToolRuntime) -> Command:
+    """Set the preferred response language."""
+    return Command(update={
+        "preferred_language": language,
+        "messages": [
+            ToolMessage(
+                content=f"Language set to {language}.",
+                tool_call_id=runtime.tool_call_id,
+            )
+        ],
+    })
+```
+
+:::
+
+:::js
+
+```ts
+import { tool, ToolMessage, type ToolRuntime } from "langchain";
+import { Command } from "@langchain/langgraph";
+import * as z from "zod";
+
+const setLanguage = tool(
+  async ({ language }, config: ToolRuntime) => {
+    return new Command({
+      update: {
+        preferredLanguage: language,
+        messages: [
+          new ToolMessage({
+            content: `Language set to ${language}.`,
+            tool_call_id: config.toolCallId,
+          }),
+        ],
+      },
+    });
+  },
+  {
+    name: "set_language",
+    description: "Set the preferred response language.",
+    schema: z.object({ language: z.string() }),
+  }
+);
+```
+
+:::
+
+Behavior:
+
+- The command updates state using `update`.
+- Updated state is available to subsequent steps in the same run.
+- Use reducers for fields that may be updated by parallel tool calls.
+
+Use this when the tool is not just returning data, but also mutating agent state.
+
 ### Error handling
 
 Configure how tool errors are handled. See the @[`ToolNode`] API reference for all options.
