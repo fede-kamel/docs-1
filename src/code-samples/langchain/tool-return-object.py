@@ -1,6 +1,7 @@
 # :snippet-start: tool-return-object
 from langchain.tools import tool
 
+
 @tool
 def get_weather_data(city: str) -> dict:
     """Get structured weather data for a city."""
@@ -9,6 +10,8 @@ def get_weather_data(city: str) -> dict:
         "temperature_c": 22,
         "conditions": "sunny",
     }
+
+
 # :snippet-end:
 
 # :remove-start:

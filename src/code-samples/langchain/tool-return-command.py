@@ -3,18 +3,23 @@ from langchain.tools import tool, ToolRuntime
 from langchain.messages import ToolMessage
 from langgraph.types import Command
 
+
 @tool
 def set_language(language: str, runtime: ToolRuntime) -> Command:
     """Set the preferred response language."""
-    return Command(update={
-        "preferred_language": language,
-        "messages": [
-            ToolMessage(
-                content=f"Language set to {language}.",
-                tool_call_id=runtime.tool_call_id,
-            )
-        ],
-    })
+    return Command(
+        update={
+            "preferred_language": language,
+            "messages": [
+                ToolMessage(
+                    content=f"Language set to {language}.",
+                    tool_call_id=runtime.tool_call_id,
+                )
+            ],
+        }
+    )
+
+
 # :snippet-end:
 
 # :remove-start:

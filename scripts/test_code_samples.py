@@ -54,8 +54,16 @@ def collect_files_to_test(
         return result
 
     # No FILES specified: run all by default
-    py_files = sorted(p for p in code_samples_dir.rglob("*.py") if is_valid_sample(p, code_samples_dir))
-    ts_files = sorted(p for p in code_samples_dir.rglob("*.ts") if is_valid_sample(p, code_samples_dir))
+    py_files = sorted(
+        p
+        for p in code_samples_dir.rglob("*.py")
+        if is_valid_sample(p, code_samples_dir)
+    )
+    ts_files = sorted(
+        p
+        for p in code_samples_dir.rglob("*.ts")
+        if is_valid_sample(p, code_samples_dir)
+    )
     return [(p, "python") for p in py_files] + [(p, "ts") for p in ts_files]
 
 
@@ -72,7 +80,9 @@ def main() -> int:
 
     if total == 0:
         if os.environ.get("FILES"):
-            print("No valid files to test. Check that paths exist under src/code-samples/ and use .py or .ts")
+            print(
+                "No valid files to test. Check that paths exist under src/code-samples/ and use .py or .ts"
+            )
         else:
             print("No code samples found in src/code-samples/")
         return 0
