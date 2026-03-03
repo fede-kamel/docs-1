@@ -130,6 +130,14 @@ make test-code-samples
 
 For multiple files: `FILES="path1 path2"`. Fix any failures before proceeding—do not run Bluehawk extraction until the samples pass.
 
+Check formatting with:
+
+```bash
+make lint
+```
+
+Fix any ruff or mypy issues before proceeding. Run `make format` to auto-fix formatting.
+
 ### 5. Run snippet extraction
 
 From the repo root:
@@ -196,6 +204,7 @@ To support additional languages, add config entries in that script.
 ## Guidelines
 
 - Always run `make test-code-samples FILES="path/to/your/file.py"` before `make code-snippets` to ensure new samples pass.
+- Run `make lint` once the code sample is written; fix any issues (or run `make format` to auto-fix).
 - `src/code-samples-generated/` is gitignored; regenerate with `make code-snippets`.
 - Reference `CLAUDE.md` and `AGENTS.md` for docs style and rules.
 - Use `:::python` and `:::js` fences for language-specific content; the build produces separate Python and JavaScript doc versions.
