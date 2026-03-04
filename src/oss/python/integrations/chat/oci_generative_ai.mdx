@@ -68,37 +68,26 @@ llm = ChatOCIGenAI(
 
 ```python
 messages = [
-    (
-        "system",
-        "You are a helpful assistant that translates English to French.",
-    ),
-    ("human", "I love programming."),
+    ("system", "You are a code review assistant."),
+    ("human", "Review this Python function for security issues:\n\n```python\ndef login(username, password):\n    query = f\"SELECT * FROM users WHERE name='{username}' AND pass='{password}'\"\n    return db.execute(query)\n```"),
 ]
-ai_msg = llm.invoke(messages)
-print(ai_msg.content)
+response = llm.invoke(messages)
+print(response.content)
 ```
 
-```text
-J'adore la programmation.
-```
-
-### Multi-turn Conversations
+**Multi-turn conversations** maintain context across messages:
 
 ```python
 from langchain.messages import HumanMessage, AIMessage
 
 messages = [
-    HumanMessage(content="Hi, I'm Alice."),
-    AIMessage(content="Hello Alice! How can I help you today?"),
-    HumanMessage(content="What's my name?"),
+    HumanMessage(content="Analyze error rate spike at 14:30 UTC"),
+    AIMessage(content="The spike correlates with deploy-v2.1.3. Checking logs..."),
+    HumanMessage(content="What was the root cause?"),
 ]
 
 response = llm.invoke(messages)
-print(response.content)
-```
-
-```text
-Your name is Alice.
+# Model references previous context about deploy-v2.1.3
 ```
 
 ## Streaming
@@ -112,80 +101,125 @@ for chunk in llm.stream(messages):
 
 ## Async
 
-Use async for concurrent requests or non-blocking applications:
+Process multiple requests concurrently for better throughput:
 
 ```python
 import asyncio
 
-# Async generation
-response = await llm.ainvoke("What is 2+2?")
+# Analyze multiple code files concurrently
+async def analyze_codebase(files):
+    tasks = [
+        llm.ainvoke(f"Find security vulnerabilities in:\n{code}")
+        for code in files
+    ]
+    results = await asyncio.gather(*tasks)
+    return results
 
-# Async streaming
-async for chunk in llm.astream("Tell me a story"):
-    print(chunk.content, end="")
-
-# Run multiple requests concurrently
-results = await asyncio.gather(
-    llm.ainvoke("What is 2+2?"),
-    llm.ainvoke("What is 3+3?"),
-)
+# Stream responses for real-time UI updates
+async def generate_documentation(code):
+    async for chunk in llm.astream(
+        f"Generate API documentation for:\n{code}"
+    ):
+        print(chunk.content, end="", flush=True)
+        # Send chunk to websocket, update UI, etc.
 ```
 
 ## Tool Calling
 
-Give models access to external functions (APIs, databases, etc.):
+Give models access to APIs, databases, and custom functions:
 
 ```python
 from langchain.tools import tool
+import requests
 
 @tool
-def get_weather(city: str) -> str:
-    """Get the weather for a city."""
-    # In production, call a weather API
-    return f"Weather in {city}: 72°F, sunny"
+def query_user_analytics(user_id: str, metric: str) -> dict:
+    """Query analytics database for user metrics.
 
-llm_with_tools = llm.bind_tools([get_weather])
-response = llm_with_tools.invoke("What's the weather in Chicago?")
+    Args:
+        user_id: The user ID to query
+        metric: Metric name (revenue, sessions, conversions)
+    """
+    # Example: Call your analytics API
+    response = requests.get(
+        f"https://api.example.com/analytics/{user_id}",
+        params={"metric": metric}
+    )
+    return response.json()
 
-# Model decides to call the tool
-print(response.tool_calls)
-# [{'name': 'get_weather', 'args': {'city': 'Chicago'}, 'id': 'call_1'}]
+@tool
+def get_stock_price(ticker: str) -> float:
+    """Get current stock price from financial API.
+
+    Args:
+        ticker: Stock ticker symbol (e.g., AAPL, GOOGL)
+    """
+    # Example: Call financial data API
+    response = requests.get(f"https://api.example.com/stocks/{ticker}")
+    return response.json()["price"]
+
+llm_with_tools = llm.bind_tools([query_user_analytics, get_stock_price])
+
+# Model analyzes query and calls appropriate tool
+response = llm_with_tools.invoke(
+    "What's user 12345's revenue and current AAPL stock price?"
+)
+
+# Inspect tool calls made by model
+for tool_call in response.tool_calls:
+    print(f"Called: {tool_call['name']}")
+    print(f"Args: {tool_call['args']}")
 ```
 
-**Parallel tools** (Llama 4+ only) execute multiple tools simultaneously:
+**Parallel tool execution** (Llama 4+) for concurrent API calls:
 
 ```python
 llm = ChatOCIGenAI(model_id="meta.llama-4-scout-17b-16e-instruct", ...)
 llm_with_tools = llm.bind_tools(
-    [get_weather, get_time],
-    parallel_tool_calls=True,
+    [query_user_analytics, get_stock_price],
+    parallel_tool_calls=True,  # Execute tools concurrently
 )
-# "Weather in Chicago and time in NYC?" → calls both tools at once
+# Model calls both tools at once, reducing latency
 ```
 
 ## Structured Output
 
-Extract data into Pydantic models for type-safe parsing:
+Parse unstructured text into typed data structures for processing:
 
 ```python
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import List, Literal
 
-class Person(BaseModel):
-    name: str
-    age: int
-    email: str
+class SupportTicket(BaseModel):
+    """Structured representation of a customer support ticket."""
+    ticket_id: str
+    severity: Literal["low", "medium", "high", "critical"]
+    category: str = Field(description="e.g., billing, technical, account")
+    description: str
+    affected_services: List[str]
 
-structured_llm = llm.with_structured_output(Person)
-result = structured_llm.invoke("John is 30 years old, email john@example.com")
+structured_llm = llm.with_structured_output(SupportTicket)
 
-print(result.name)   # "John"
-print(result.age)    # 30
-print(result.email)  # "john@example.com"
+# Parse unstructured support email
+ticket = structured_llm.invoke("""
+From: customer@example.com
+Subject: URGENT - Cannot access production database
+
+Our production API has been returning 500 errors for the past hour.
+The database connection pool appears exhausted. This is affecting
+our payment processing and user authentication services.
+""")
+
+print(ticket.severity)  # "critical"
+print(ticket.category)  # "technical"
+print(ticket.affected_services)  # ["payment", "authentication"]
 ```
+
+Use for log parsing, invoice extraction, or data classification pipelines.
 
 ## Vision & Multimodal
 
-Analyze images with vision-capable models:
+Process images for data extraction, analysis, and automation:
 
 ```python
 from langchain.messages import HumanMessage
@@ -193,19 +227,34 @@ from langchain_oci import ChatOCIGenAI, load_image
 
 llm = ChatOCIGenAI(model_id="meta.llama-3.2-90b-vision-instruct", ...)
 
+# Extract data from chart/graph
 message = HumanMessage(content=[
-    {"type": "text", "text": "What's in this image?"},
-    load_image("./photo.jpg"),  # Or use a URL
+    {"type": "text", "text": """
+    Extract all data points from this time-series chart.
+    Return as JSON with timestamp and value pairs.
+    """},
+    load_image("./metrics_chart.png"),
 ])
+chart_data = llm.invoke([message])
 
-response = llm.invoke([message])
+# Analyze architectural diagram
+message = HumanMessage(content=[
+    {"type": "text", "text": """
+    Identify all services and their connections in this architecture diagram.
+    List components, data flows, and external dependencies.
+    """},
+    load_image("https://example.com/architecture.png"),
+])
+architecture = llm.invoke([message])
 ```
 
-**Vision-capable models:** Llama 3.2 Vision, Gemini 2.0/2.5, Grok 4, Command A Vision
+**Use cases:** Document processing, diagram analysis, receipt/invoice parsing, chart data extraction
+
+**Vision models:** Llama 3.2 Vision, Gemini 2.0/2.5, Grok 4, Command A Vision
 
 ## Gemini Multimodal (PDF, Video, Audio)
 
-Gemini models process PDFs, videos, and audio:
+Process documents, videos, and audio for automation pipelines:
 
 ```python
 import base64
@@ -213,19 +262,36 @@ from langchain.messages import HumanMessage
 
 llm = ChatOCIGenAI(model_id="google.gemini-2.5-flash", ...)
 
-# Load file as base64
-with open("document.pdf", "rb") as f:
-    data = base64.b64encode(f.read()).decode()
+# Extract structured data from contract PDF
+with open("contract.pdf", "rb") as f:
+    pdf_data = base64.b64encode(f.read()).decode()
 
 message = HumanMessage(content=[
-    {"type": "text", "text": "Summarize this document"},
-    {"type": "media", "data": data, "mime_type": "application/pdf"}
+    {"type": "text", "text": """
+    Extract: contract parties, effective date, termination clauses,
+    payment terms, and key obligations. Return as structured JSON.
+    """},
+    {"type": "media", "data": pdf_data, "mime_type": "application/pdf"}
 ])
+contract_data = llm.invoke([message])
 
-response = llm.invoke([message])
+# Analyze meeting recording
+with open("meeting.mp4", "rb") as f:
+    video_data = base64.b64encode(f.read()).decode()
+
+message = HumanMessage(content=[
+    {"type": "text", "text": """
+    Summarize key decisions, action items, and deadlines from this meeting.
+    Include who is responsible for each action item.
+    """},
+    {"type": "media", "data": video_data, "mime_type": "video/mp4"}
+])
+meeting_notes = llm.invoke([message])
 ```
 
-**Supported formats:** PDF, MP4/MOV video, MP3/WAV audio (Gemini 2.0/2.5 only)
+**Use cases:** Contract analysis, meeting transcription, compliance auditing, document processing
+
+**Formats:** PDF, MP4/MOV video, MP3/WAV audio (Gemini 2.0/2.5 only)
 
 ## Configuration
 

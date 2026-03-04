@@ -150,7 +150,7 @@ embeddings = OCIGenAIEmbeddings(
 )
 
 # Image embeddings (with multimodal models)
-vector = embeddings.embed_image("./photo.jpg")
+vector = embeddings.embed_image("./architecture_diagram.png")
 ```
 
 **Available Models:**
@@ -174,8 +174,14 @@ llm = ChatOCIGenAI(
 
 message = HumanMessage(
     content=[
-        {"type": "text", "text": "Describe this image"},
-        load_image("./photo.jpg"),
+        {"type": "text", "text": """
+        Analyze this system architecture diagram and identify:
+        1. All microservices and their responsibilities
+        2. Data flow between components
+        3. External dependencies and APIs
+        4. Potential bottlenecks or single points of failure
+        """},
+        load_image("./architecture_diagram.png"),
     ]
 )
 
@@ -191,12 +197,15 @@ from langchain_oci import ChatOCIGenAI
 
 llm = ChatOCIGenAI(model_id="google.gemini-2.5-flash", ...)
 
-# PDF processing
-with open("doc.pdf", "rb") as f:
+# PDF processing - Extract structured data from contracts
+with open("vendor_contract.pdf", "rb") as f:
     pdf_data = base64.b64encode(f.read()).decode()
 
 message = HumanMessage(content=[
-    {"type": "text", "text": "Summarize this PDF"},
+    {"type": "text", "text": """
+    Extract key contract terms: parties, effective date, termination clauses,
+    payment terms, SLA commitments, and liability caps. Return as JSON.
+    """},
     {"type": "media", "data": pdf_data, "mime_type": "application/pdf"}
 ])
 ```
@@ -210,21 +219,32 @@ from langchain.tools import tool
 from langchain_oci import create_oci_agent
 
 @tool
-def search(query: str) -> str:
-    """Search for information."""
-    return f"Results for: {query}"
+def query_infrastructure(resource_type: str, region: str) -> dict:
+    """Query OCI infrastructure status and health metrics.
+
+    Args:
+        resource_type: Type of resource (compute, database, network)
+        region: OCI region to query
+    """
+    # Example: Call OCI monitoring API
+    return {
+        "status": "healthy",
+        "active_instances": 12,
+        "cpu_utilization": "45%",
+        "alerts": []
+    }
 
 agent = create_oci_agent(
     model_id="meta.llama-4-scout-17b-16e-instruct",
-    tools=[search],
+    tools=[query_infrastructure],
     compartment_id="ocid1.compartment.oc1..xxx",
     service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
-    system_prompt="You are a helpful assistant.",
+    system_prompt="You are an infrastructure monitoring assistant.",
 )
 
 from langchain.messages import HumanMessage
 result = agent.invoke({
-    "messages": [HumanMessage(content="Search for Python tutorials")]
+    "messages": [HumanMessage(content="Check compute resource health in us-ashburn-1")]
 })
 ```
 

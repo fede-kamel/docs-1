@@ -53,47 +53,63 @@ embeddings = OCIGenAIEmbeddings(
 
 ## Usage
 
-Embed text for semantic search:
+Build semantic search over technical documentation:
 
 ```python
-# Single query
-query_vector = embeddings.embed_query("What is machine learning?")
+# Index code documentation
+docs = [
+    "authenticate() validates JWT tokens and returns user object",
+    "authorize() checks user permissions for resource access",
+    "audit_log() records user actions for compliance tracking"
+]
+doc_vectors = embeddings.embed_documents(docs)
 
-# Multiple documents
-documents = ["AI is...", "ML uses...", "NLP handles..."]
-doc_vectors = embeddings.embed_documents(documents)
-```
+# Search with natural language query
+query = "How do I verify user identity?"
+query_vector = embeddings.embed_query(query)
 
-Find similar documents with cosine similarity:
-
-```python
+# Find most relevant documentation
 import numpy as np
-
-docs = ["The cat sat on the mat", "A feline rested", "The dog barked"]
-vectors = embeddings.embed_documents(docs)
-
-# Compare first doc to others
-similarity = np.dot(vectors[0], vectors[1]) / (
-    np.linalg.norm(vectors[0]) * np.linalg.norm(vectors[1])
-)
-print(similarity)  # High for similar meaning
+similarities = [
+    np.dot(query_vector, doc_vec) /
+    (np.linalg.norm(query_vector) * np.linalg.norm(doc_vec))
+    for doc_vec in doc_vectors
+]
+best_match = docs[np.argmax(similarities)]
+# Returns: "authenticate() validates JWT tokens..."
 ```
+
+**Use cases:** Code search, documentation Q&A, log analysis, duplicate detection
 
 ## Image Embeddings
 
-Multimodal models (v4.0) embed images and text in the same vector space:
+Search visual assets with text queries using multimodal embeddings:
 
 ```python
 embeddings = OCIGenAIEmbeddings(model_id="cohere.embed-v4.0", ...)
 
-# Embed images
-image_vector = embeddings.embed_image("./photo.jpg")  # or URL
-image_vectors = embeddings.embed_image_batch(["img1.jpg", "img2.jpg"])
+# Index architecture diagrams, charts, and technical images
+diagrams = [
+    "microservices_architecture.png",
+    "database_schema.png",
+    "network_topology.png"
+]
+image_vectors = embeddings.embed_image_batch(diagrams)
 
-# Search images with text
-query_vector = embeddings.embed_query("sunset over ocean")
-# Compare query_vector to image_vectors to find matches
+# Search with text query
+query_vector = embeddings.embed_query("show me the database relationships")
+
+# Find matching diagram
+similarities = [
+    np.dot(query_vector, img_vec) /
+    (np.linalg.norm(query_vector) * np.linalg.norm(img_vec))
+    for img_vec in image_vectors
+]
+best_match = diagrams[np.argmax(similarities)]
+# Returns: "database_schema.png"
 ```
+
+**Use cases:** Technical diagram search, asset management, visual documentation retrieval
 
 ## Available Models
 
