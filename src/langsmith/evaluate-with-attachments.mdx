@@ -540,7 +540,7 @@ First, click the file icon in the message where you want to add multimodal conte
 
 ## 3. Define custom evaluators
 
-You can create evaluators that use multimodal content from your dataset examples. The process is similar to creating a multimodal prompt.
+You can create evaluators that use multimodal content from your dataset examples.
 
 To add attachments to an evaluator:
 
@@ -549,6 +549,20 @@ To add attachments to an evaluator:
 1. Add a template variable for the attachment(s) you want to include:
    - For a single attachment type: Use the suggested variable name. Note: all examples must have an attachment with this name.
    - For multiple attachments or if your attachments have varying names: Use the `All attachments` variable to include all available attachments for each example.
+
+
+    <img
+        className="block dark:hidden"
+        src="/langsmith/images/evaluator-attach-file-light.png"
+        alt="Create evaluator modal with an audio attachment selected for output variable."
+    />
+
+    <img
+        className="hidden dark:block"
+        src="/langsmith/images/evaluator-attach-file-dark.png"
+        alt="Create evaluator modal with an audio attachment selected for output variable."
+    />
+
 
 The evaluator can then use these attachments along with the model's outputs to judge quality. For example, you could create an evaluator that:
 
