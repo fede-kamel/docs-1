@@ -1,76 +1,540 @@
 ---
 title: "ChatOCIGenAI integration"
-description: "Integrate with the ChatOCIGenAI chat model using LangChain Python."
+description: "Integrate with ChatOCIGenAI chat model using LangChain Python."
 ---
 
-This guide provides a quick overview for getting started with OCIGenAI [chat models](/oss/langchain/models). For detailed documentation of all ChatOCIGenAI features and configurations head to the [API reference](https://python.langchain.com/api_reference/community/chat_models/langchain_community.chat_models.oci_generative_ai.ChatOCIGenAI.html).
+This doc will help you get started with Oracle Cloud Infrastructure (OCI) Generative AI [chat models](/oss/langchain/models). OCI Generative AI is a fully managed service providing state-of-the-art, customizable large language models covering a wide range of use cases through a single API. Access ready-to-use pretrained models or create and host fine-tuned custom models on dedicated AI clusters.
 
-Oracle Cloud Infrastructure (OCI) Generative AI is a fully managed service that provides a set of state-of-the-art, customizable Large Language Models (LLMs) that cover a wide range of use cases, and which is available through a single API.
-Using the OCI Generative AI service you can access ready-to-use pretrained models, or create and host your own fine-tuned custom models based on your own data on dedicated AI clusters. Detailed documentation of the service and API is available __[here](https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm)__ and __[here](https://docs.oracle.com/en-us/iaas/api/#/en/generative-ai/20231130/)__.
+For detailed documentation, see the [OCI Generative AI documentation](https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm) and [API reference](https://docs.oracle.com/en-us/iaas/api/#/en/generative-ai/20231130/).
 
 ## Overview
 
 ### Integration details
 
-| Class | Package | Serializable | [JS support](https://js.langchain.com/docs/integrations/chat/oci_generative_ai) |
-| :--- | :--- | :---: |  :---: |
-| [ChatOCIGenAI](https://python.langchain.com/api_reference/community/chat_models/langchain_community.chat_models.oci_generative_ai.ChatOCIGenAI.html) | [langchain-community](https://python.langchain.com/api_reference/community/index.html) | ❌ | ❌ |
+| Class | Package | Serializable | JS support | Downloads | Version |
+| :--- | :--- | :---: |  :---: | :---: | :---: |
+| [ChatOCIGenAI](https://python.langchain.com/api_reference/oci/chat_models/langchain_oci.chat_models.oci_genai.ChatOCIGenAI.html) | [langchain-oci](https://python.langchain.com/api_reference/oci/index.html) | beta | ❌ | ![PyPI - Downloads](https://img.shields.io/pypi/dm/langchain-oci?style=flat-square&label=%20) | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-oci?style=flat-square&label=%20) |
 
 ### Model features
 
 | [Tool calling](/oss/langchain/tools/) | [Structured output](/oss/langchain/structured-output) | [Image input](/oss/langchain/messages#multimodal) | Audio input | Video input | [Token-level streaming](/oss/langchain/streaming/) | Native async | [Token usage](/oss/langchain/models#token-usage) | [Logprobs](/oss/langchain/models#log-probabilities) |
 | :---: | :---: | :---: |  :---: | :---: | :---: | :---: | :---: | :---: |
-| ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| ✅ | ✅ | ✅ | ✅ (Gemini) | ✅ (Gemini) | ✅ | ✅ | ✅ | ❌ |
 
 ## Setup
 
-To access OCIGenAI models you'll need to install the `oci` and `langchain-community` packages.
+To access OCI Generative AI models, you'll need an OCI account with access to the Generative AI service, proper authentication configured, and the `langchain-oci` integration package.
 
 ### Credentials
 
-The credentials and authentication methods supported for this integration are equivalent to those used with other OCI services and follow the __[standard SDK authentication](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm)__ methods, specifically API Key, session token, instance principal, and resource principal.
+OCI supports four authentication methods following the [standard OCI SDK authentication](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm):
 
-API key is the default authentication method used in the examples above. The following example demonstrates how to use a different authentication method (session token)
+1. **API Key** - Uses credentials from `~/.oci/config` (default)
+2. **Security Token** - Session-based authentication
+3. **Instance Principal** - For OCI compute instances
+4. **Resource Principal** - For OCI Functions and other resources
+
+To set up API key authentication (recommended for getting started):
+
+```bash
+oci setup config
+```
+
+This creates `~/.oci/config` with your credentials in the `DEFAULT` profile.
 
 ### Installation
 
-The LangChain OCIGenAI integration lives in the `langchain-community` package and you will also need to install the `oci` package:
+The LangChain OCI integration lives in the `langchain-oci` package. You'll also need the `oci` SDK:
 
-```python
-pip install -qU langchain-community oci
+<CodeGroup>
+```bash pip
+pip install -qU langchain-oci oci
 ```
+
+```bash uv
+uv add langchain-oci oci
+```
+</CodeGroup>
 
 ## Instantiation
 
 Now we can instantiate our model object and generate chat completions:
 
 ```python
-from langchain_community.chat_models.oci_generative_ai import ChatOCIGenAI
-from langchain.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_oci import ChatOCIGenAI
 
-chat = ChatOCIGenAI(
-    model_id="cohere.command-r-16k",
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.3-70b-instruct",
     service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
-    compartment_id="MY_OCID",
-    model_kwargs={"temperature": 0.7, "max_tokens": 500},
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
+    # Optional parameters:
+    # auth_type="API_KEY",  # Default
+    # auth_profile="DEFAULT",  # Profile name in ~/.oci/config
+    # model_kwargs={"temperature": 0.7, "max_tokens": 500},
 )
 ```
+
+### Service Endpoints
+
+OCI Generative AI is available in multiple regions:
+
+| Region | Endpoint |
+|--------|----------|
+| Chicago | `https://inference.generativeai.us-chicago-1.oci.oraclecloud.com` |
+| Frankfurt | `https://inference.generativeai.eu-frankfurt-1.oci.oraclecloud.com` |
+
+### Authentication Examples
+
+<CodeGroup>
+```python API Key
+# Uses ~/.oci/config DEFAULT profile
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="API_KEY",
+    auth_profile="DEFAULT",
+)
+```
+
+```python Security Token
+# Session-based auth (run: oci session authenticate --profile-name MY_PROFILE)
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="SECURITY_TOKEN",
+    auth_profile="MY_PROFILE",
+)
+```
+
+```python Instance Principal
+# For applications on OCI compute
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="INSTANCE_PRINCIPAL",
+)
+```
+
+```python Resource Principal
+# For OCI Functions
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="RESOURCE_PRINCIPAL",
+)
+```
+</CodeGroup>
 
 ## Invocation
 
 ```python
 messages = [
-    SystemMessage(content="your are an AI assistant."),
-    AIMessage(content="Hi there human!"),
-    HumanMessage(content="tell me a joke."),
+    (
+        "system",
+        "You are a helpful assistant that translates English to French.",
+    ),
+    ("human", "I love programming."),
 ]
-response = chat.invoke(messages)
+ai_msg = llm.invoke(messages)
+print(ai_msg.content)
 ```
 
+```text
+J'adore la programmation.
+```
+
+### Multi-turn Conversations
+
 ```python
+from langchain_core.messages import HumanMessage, AIMessage
+
+messages = [
+    HumanMessage(content="Hi, I'm Alice."),
+    AIMessage(content="Hello Alice! How can I help you today?"),
+    HumanMessage(content="What's my name?"),
+]
+
+response = llm.invoke(messages)
 print(response.content)
 ```
 
-## API reference
+```text
+Your name is Alice.
+```
 
-For detailed documentation of all ChatOCIGenAI features and configurations head to the API reference: [python.langchain.com/api_reference/community/chat_models/langchain_community.chat_models.oci_generative_ai.ChatOCIGenAI.html](https://python.langchain.com/api_reference/community/chat_models/langchain_community.chat_models.oci_generative_ai.ChatOCIGenAI.html)
+## Streaming
+
+Stream responses token-by-token for real-time output:
+
+```python
+for chunk in llm.stream(messages):
+    print(chunk.content, end="", flush=True)
+```
+
+```text
+J'adore la programmation.
+```
+
+### Async Streaming
+
+```python
+async for chunk in llm.astream(messages):
+    print(chunk.content, end="", flush=True)
+```
+
+## Async
+
+All operations support async for production workloads:
+
+```python
+import asyncio
+
+async def main():
+    # Single async request
+    response = await llm.ainvoke(messages)
+    print(response.content)
+
+    # Concurrent requests
+    results = await asyncio.gather(
+        llm.ainvoke("What is 2+2?"),
+        llm.ainvoke("What is 3+3?"),
+        llm.ainvoke("What is 4+4?"),
+    )
+    for r in results:
+        print(r.content)
+
+asyncio.run(main())
+```
+
+## Tool Calling
+
+Bind tools to enable function calling:
+
+```python
+from langchain_core.tools import tool
+
+@tool
+def get_weather(city: str) -> str:
+    """Get the weather for a city."""
+    return f"Weather in {city}: 72°F, sunny"
+
+@tool
+def get_time(timezone: str) -> str:
+    """Get current time in a timezone."""
+    return f"Time in {timezone}: 2:30 PM"
+
+llm_with_tools = llm.bind_tools([get_weather, get_time])
+response = llm_with_tools.invoke("What's the weather in Chicago?")
+
+# Access tool calls
+print(response.tool_calls)
+```
+
+```python
+[{'name': 'get_weather', 'args': {'city': 'Chicago'}, 'id': 'call_1'}]
+```
+
+### Parallel Tool Calls
+
+Llama 4+ models support parallel tool execution:
+
+```python
+from langchain_oci import ChatOCIGenAI
+
+llm = ChatOCIGenAI(
+    model_id="meta.llama-4-scout-17b-16e-instruct",  # Llama 4+ required
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+
+llm_with_tools = llm.bind_tools(
+    [get_weather, get_time],
+    parallel_tool_calls=True,  # Enable parallel execution
+)
+
+response = llm_with_tools.invoke("What's the weather in Chicago and the time in New York?")
+print(len(response.tool_calls))  # 2 - both tools called in parallel
+```
+
+### Tool Configuration
+
+```python
+llm_with_tools = llm.bind_tools(
+    tools=[get_weather],
+    tool_choice="auto",  # "auto", "required", "none", or specific tool name
+    parallel_tool_calls=False,  # Enable parallel execution (Llama 4+)
+    max_sequential_tool_calls=8,  # Limit consecutive calls
+    tool_result_guidance=False,  # Guide model to use results naturally
+)
+```
+
+## Structured Output
+
+Extract structured data using Pydantic models:
+
+```python
+from pydantic import BaseModel, Field
+
+class Contact(BaseModel):
+    """Contact information."""
+    name: str = Field(description="Person's full name")
+    email: str = Field(description="Email address")
+    phone: str = Field(description="Phone number")
+
+structured_llm = llm.with_structured_output(Contact)
+
+result = structured_llm.invoke(
+    "Extract contact info: John Doe, email john@example.com, phone 555-1234"
+)
+
+print(f"Name: {result.name}")
+print(f"Email: {result.email}")
+print(f"Phone: {result.phone}")
+```
+
+```text
+Name: John Doe
+Email: john@example.com
+Phone: 555-1234
+```
+
+### Structured Output Methods
+
+```python
+# Method 1: Function calling (most reliable, default)
+structured_llm = llm.with_structured_output(Contact, method="function_calling")
+
+# Method 2: JSON mode (for simple schemas)
+structured_llm = llm.with_structured_output(Contact, method="json_mode")
+
+# Method 3: JSON schema (native OCI support)
+structured_llm = llm.with_structured_output(Contact, method="json_schema")
+```
+
+## Vision & Multimodal
+
+13+ models support vision capabilities across Meta Llama, Google Gemini, xAI Grok, and Cohere.
+
+### Image Analysis
+
+```python
+from langchain_core.messages import HumanMessage
+from langchain_oci import ChatOCIGenAI, load_image
+
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.2-90b-vision-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+
+message = HumanMessage(
+    content=[
+        {"type": "text", "text": "What's in this image? Describe in detail."},
+        load_image("./photo.jpg"),  # Or use URL
+    ]
+)
+
+response = llm.invoke([message])
+print(response.content)
+```
+
+### Vision Utility Functions
+
+```python
+from langchain_oci import load_image, encode_image, to_data_uri, is_vision_model
+
+# Load image from file or URL
+image_block = load_image("./photo.jpg")
+image_block = load_image("https://example.com/image.png")
+
+# Encode raw bytes
+with open("photo.jpg", "rb") as f:
+    image_block = encode_image(f.read(), "image/jpeg")
+
+# Convert to data URI
+data_uri = to_data_uri(image_block)
+
+# Check if model supports vision
+if is_vision_model("meta.llama-3.2-90b-vision-instruct"):
+    print("This model supports vision!")
+```
+
+### Vision-Capable Models
+
+```python
+from langchain_oci.utils.vision import VISION_MODELS
+
+print(VISION_MODELS)
+# ['meta.llama-3.2-90b-vision-instruct', 'meta.llama-3.2-11b-vision-instruct',
+#  'google.gemini-2.5-flash', 'xai.grok-4', 'cohere.command-a-vision', ...]
+```
+
+## Gemini Multimodal (PDF, Video, Audio)
+
+Google Gemini models support PDF documents, video, and audio files:
+
+### PDF Processing
+
+```python
+import base64
+from langchain_core.messages import HumanMessage
+from langchain_oci import ChatOCIGenAI
+
+llm = ChatOCIGenAI(
+    model_id="google.gemini-2.5-flash",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+
+# Load and encode PDF
+with open("document.pdf", "rb") as f:
+    pdf_data = base64.b64encode(f.read()).decode()
+
+message = HumanMessage(content=[
+    {"type": "text", "text": "Summarize this PDF document"},
+    {"type": "media", "data": pdf_data, "mime_type": "application/pdf"}
+])
+
+response = llm.invoke([message])
+print(response.content)
+```
+
+### Video Analysis
+
+```python
+# Load and encode video
+with open("video.mp4", "rb") as f:
+    video_data = base64.b64encode(f.read()).decode()
+
+message = HumanMessage(content=[
+    {"type": "text", "text": "What happens in this video?"},
+    {"type": "media", "data": video_data, "mime_type": "video/mp4"}
+])
+
+response = llm.invoke([message])
+```
+
+### Audio Transcription
+
+```python
+# Load and encode audio
+with open("audio.mp3", "rb") as f:
+    audio_data = base64.b64encode(f.read()).decode()
+
+message = HumanMessage(content=[
+    {"type": "text", "text": "Transcribe this audio"},
+    {"type": "media", "data": audio_data, "mime_type": "audio/mp3"}
+])
+
+response = llm.invoke([message])
+```
+
+### Supported Media Types
+
+| Media Type | MIME Types | Example Models |
+|------------|------------|----------------|
+| **Images** | `image/jpeg`, `image/png`, `image/webp` | Llama 3.2 Vision, Gemini, Grok 4 |
+| **PDF** | `application/pdf` | Gemini 2.0/2.5 |
+| **Video** | `video/mp4`, `video/mpeg`, `video/mov` | Gemini 2.0/2.5 |
+| **Audio** | `audio/mp3`, `audio/wav`, `audio/aac` | Gemini 2.0/2.5 |
+
+## Model Configuration
+
+Configure model behavior with `model_kwargs`:
+
+```python
+llm = ChatOCIGenAI(
+    model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    model_kwargs={
+        "temperature": 0.7,      # Creativity (0.0-1.0)
+        "max_tokens": 500,       # Max response length
+        "top_p": 0.9,           # Nucleus sampling
+        "top_k": 50,            # Top-k sampling
+        "frequency_penalty": 0.0,  # Reduce repetition
+        "presence_penalty": 0.0,   # Encourage new topics
+    },
+)
+```
+
+## Available Models
+
+OCI Generative AI provides access to 50+ models across multiple providers:
+
+| Provider | Example Models | Key Features |
+|----------|----------------|--------------|
+| **Meta** | Llama 3.2 (11B, 90B Vision), Llama 3.3 (70B), Llama 4 (Scout, Maverick) | Vision, parallel tools, fast inference |
+| **Google** | Gemini 2.0 Flash, Gemini 2.5 Flash/Pro | PDF, video, audio, vision |
+| **xAI** | Grok 3 (Fast, Mini), Grok 4 (Fast, Non-Reasoning) | Vision, reasoning modes |
+| **Cohere** | Command R+, Command A (Reasoning, Vision) | RAG optimization, vision |
+| **OpenAI** | GPT-4.1, GPT-5, o1, o3 (via ChatOCIOpenAI) | Reasoning, commercial models |
+
+> **Note:** Model availability varies by region and account. See the [OCI model catalog](https://docs.oracle.com/en-us/iaas/Content/generative-ai/pretrained-models.htm) for current offerings.
+
+## Dedicated AI Cluster Models
+
+For custom or imported models on Dedicated AI Clusters, use endpoint OCIDs:
+
+```python
+llm = ChatOCIGenAI(
+    model_id="ocid1.generativeaiendpoint.oc1.us-chicago-1.xxxxx",  # Endpoint OCID
+    provider="meta",  # Specify provider: "meta", "cohere", "google", "generic"
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+```
+
+## Response Metadata
+
+Access usage statistics and response metadata:
+
+```python
+response = llm.invoke("Hello!")
+
+# Token usage
+print(response.response_metadata.get("usage"))
+# {'input_tokens': 10, 'output_tokens': 15, 'total_tokens': 25}
+
+# Model information
+print(response.response_metadata.get("model_id"))
+# 'meta.llama-3.3-70b-instruct'
+
+# Request ID (for debugging)
+print(response.response_metadata.get("request_id"))
+# 'abc123...'
+```
+
+## Error Handling
+
+```python
+from oci.exceptions import ServiceError
+
+try:
+    response = llm.invoke("Hello!")
+except ServiceError as e:
+    if e.status == 401:
+        print("Authentication failed - check your credentials")
+    elif e.status == 404:
+        print("Model or endpoint not found")
+    elif e.status == 429:
+        print("Rate limit exceeded")
+    else:
+        print(f"Error: {e.message}")
+```
+
+## API Reference
+
+For detailed documentation of all ChatOCIGenAI features and configurations, see the [API reference](https://python.langchain.com/api_reference/oci/chat_models/langchain_oci.chat_models.oci_genai.ChatOCIGenAI.html).
+
+## Related
+
+- [OCI Provider Overview](/oss/integrations/providers/oci)
+- [OCI Embeddings](/oss/integrations/text_embedding/oci_generative_ai)
+- [Tool Calling Guide](/oss/langchain/tools/)
+- [Structured Output Guide](/oss/langchain/structured-output)
+- [Multimodal Messages](/oss/langchain/messages#multimodal)

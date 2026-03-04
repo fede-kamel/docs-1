@@ -1,74 +1,466 @@
 ---
-title: "Oracle cloud infrastructure generative AI integration"
-description: "Integrate with the Oracle cloud infrastructure generative AI embedding model using LangChain Python."
+title: "OCI GenAI Embeddings integration"
+description: "Integrate with OCI GenAI Embeddings using LangChain Python."
 ---
 
-Oracle Cloud Infrastructure (OCI) Generative AI is a fully managed service that provides a set of state-of-the-art, customizable large language models (LLMs), that cover a wide range of use cases, and which are available through a single API.
-Using the OCI Generative AI service you can access ready-to-use pretrained models, or create and host your own fine-tuned custom models based on your own data on dedicated AI clusters. Detailed documentation of the service and API is available __[here](https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm)__ and __[here](https://docs.oracle.com/en-us/iaas/api/#/en/generative-ai/20231130/)__.
+This doc will help you get started with OCI Generative AI [embedding models](/oss/langchain/embeddings). Oracle Cloud Infrastructure (OCI) Generative AI provides state-of-the-art embedding models for text and images, enabling semantic search, RAG, clustering, and cross-modal applications.
 
-This notebook explains how to use OCI's Genrative AI models with LangChain.
+For detailed documentation, see the [OCI Generative AI documentation](https://docs.oracle.com/en-us/iaas/Content/generative-ai/home.htm) and [API reference](https://docs.oracle.com/en-us/iaas/api/#/en/generative-ai/20231130/).
 
-### Prerequisite
+## Overview
 
-We will need to install the oci sdk
+### Integration details
 
-```python
-!pip install -U oci
+| Class | Package | Serializable | Caches at params | Async | Downloads | Version |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| [OCIGenAIEmbeddings](https://python.langchain.com/api_reference/oci/embeddings/langchain_oci.embeddings.oci_genai.OCIGenAIEmbeddings.html) | [langchain-oci](https://python.langchain.com/api_reference/oci/index.html) | beta | ✅ | ✅ | ![PyPI - Downloads](https://img.shields.io/pypi/dm/langchain-oci?style=flat-square&label=%20) | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-oci?style=flat-square&label=%20) |
+
+### Model features
+
+| Text embeddings | Image embeddings | Multimodal | Batch operations | Async |
+| :---: | :---: | :---: | :---: | :---: |
+| ✅ | ✅ | ✅ | ✅ | ✅ |
+
+## Setup
+
+To access OCI Generative AI embedding models, you'll need an OCI account with access to the Generative AI service, proper authentication configured, and the `langchain-oci` integration package.
+
+### Credentials
+
+OCI supports four authentication methods following the [standard OCI SDK authentication](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm):
+
+1. **API Key** - Uses credentials from `~/.oci/config` (default)
+2. **Security Token** - Session-based authentication
+3. **Instance Principal** - For OCI compute instances
+4. **Resource Principal** - For OCI Functions and other resources
+
+To set up API key authentication:
+
+```bash
+oci setup config
 ```
 
-### OCI generative AI API endpoint
-[inference.generativeai.us-chicago-1.oci.oraclecloud.com](https://inference.generativeai.us-chicago-1.oci.oraclecloud.com)
+This creates `~/.oci/config` with your credentials in the `DEFAULT` profile.
 
-## Authentication
+### Installation
 
-The authentication methods supported for this langchain integration are:
+The LangChain OCI integration lives in the `langchain-oci` package. You'll also need the `oci` SDK:
 
-1. API Key
-2. Session token
-3. Instance principal
-4. Resource principal
+<CodeGroup>
+```bash pip
+pip install -qU langchain-oci oci
+```
 
-These follows the standard SDK authentication methods detailed __[here](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm)__.
+```bash uv
+uv add langchain-oci oci
+```
+</CodeGroup>
 
-## Usage
+## Instantiation
+
+Now we can instantiate our embeddings object:
 
 ```python
-from langchain_community.embeddings import OCIGenAIEmbeddings
+from langchain_oci import OCIGenAIEmbeddings
 
-# use default authN method API-key
 embeddings = OCIGenAIEmbeddings(
-    model_id="MY_EMBEDDING_MODEL",
+    model_id="cohere.embed-english-v3.0",
     service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
-    compartment_id="MY_OCID",
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
+    # Optional parameters:
+    # auth_type="API_KEY",  # Default
+    # auth_profile="DEFAULT",  # Profile name in ~/.oci/config
+    # input_type="SEARCH_DOCUMENT",  # Optimize for indexing
+)
+```
+
+### Service Endpoints
+
+OCI Generative AI is available in multiple regions:
+
+| Region | Endpoint |
+|--------|----------|
+| Chicago | `https://inference.generativeai.us-chicago-1.oci.oraclecloud.com` |
+| Frankfurt | `https://inference.generativeai.eu-frankfurt-1.oci.oraclecloud.com` |
+
+## Text Embeddings
+
+### Single Query
+
+Embed a single text query for search:
+
+```python
+query_vector = embeddings.embed_query("What is machine learning?")
+print(f"Dimensions: {len(query_vector)}")  # 1024
+print(f"First 5 values: {query_vector[:5]}")
+```
+
+```text
+Dimensions: 1024
+First 5 values: [0.123, -0.456, 0.789, -0.234, 0.567]
+```
+
+### Multiple Documents
+
+Embed multiple documents for indexing:
+
+```python
+documents = [
+    "Machine learning is a branch of artificial intelligence.",
+    "Deep learning uses neural networks with many layers.",
+    "Natural language processing handles human language.",
+]
+
+doc_vectors = embeddings.embed_documents(documents)
+print(f"Number of vectors: {len(doc_vectors)}")  # 3
+print(f"Dimensions per vector: {len(doc_vectors[0])}")  # 1024
+```
+
+### Semantic Similarity
+
+Find similar documents using embeddings:
+
+```python
+import numpy as np
+
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+# Embed documents
+docs = [
+    "The cat sat on the mat",
+    "A feline rested on a rug",
+    "The dog barked loudly",
+]
+doc_vectors = embeddings.embed_documents(docs)
+
+# Find most similar to first document
+similarities = [
+    cosine_similarity(doc_vectors[0], doc_vectors[i])
+    for i in range(1, len(doc_vectors))
+]
+
+print(f"Similarity to doc 2: {similarities[0]:.3f}")  # High (~0.85)
+print(f"Similarity to doc 3: {similarities[1]:.3f}")  # Low (~0.45)
+```
+
+## Image Embeddings
+
+Multimodal models like `cohere.embed-v4.0` can embed both text and images into the same vector space.
+
+### Single Image
+
+```python
+from langchain_oci import OCIGenAIEmbeddings
+
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-v4.0",  # Multimodal model
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
 )
 
-
-query = "This is a query in English."
-response = embeddings.embed_query(query)
-print(response)
-
-documents = ["This is a sample document", "and here is another one"]
-response = embeddings.embed_documents(documents)
-print(response)
+# Embed from file path
+image_vector = embeddings.embed_image("./photo.jpg")
+print(f"Image vector dimensions: {len(image_vector)}")
 ```
 
+### Multiple Images
+
 ```python
-# Use Session Token to authN
+image_paths = ["photo1.jpg", "photo2.jpg", "photo3.jpg"]
+image_vectors = embeddings.embed_image_batch(image_paths)
+
+print(f"Number of images: {len(image_vectors)}")
+print(f"Dimensions per image: {len(image_vectors[0])}")
+```
+
+### Image Input Formats
+
+The `embed_image` method accepts multiple input formats:
+
+<CodeGroup>
+```python File Path
+# From local file
+vector = embeddings.embed_image("./photo.jpg")
+```
+
+```python Bytes
+# From raw bytes
+with open("photo.png", "rb") as f:
+    image_bytes = f.read()
+    vector = embeddings.embed_image(image_bytes, mime_type="image/png")
+```
+
+```python Data URI
+# From data URI
+data_uri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+vector = embeddings.embed_image(data_uri)
+```
+
+```python URL
+# From URL
+vector = embeddings.embed_image("https://example.com/photo.jpg")
+```
+</CodeGroup>
+
+## Cross-Modal Search
+
+Multimodal embeddings enable searching images with text queries and vice versa:
+
+```python
+import numpy as np
+from langchain_oci import OCIGenAIEmbeddings
+
 embeddings = OCIGenAIEmbeddings(
-    model_id="MY_EMBEDDING_MODEL",
+    model_id="cohere.embed-v4.0",
     service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
-    compartment_id="MY_OCID",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+
+# Index images
+image_paths = ["sunset.jpg", "beach.jpg", "mountain.jpg", "city.jpg"]
+image_vectors = embeddings.embed_image_batch(image_paths)
+
+# Search with text query
+query = "A beautiful sunset over the ocean"
+query_vector = embeddings.embed_query(query)
+
+# Find most similar image
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+similarities = [
+    cosine_similarity(query_vector, img_vec)
+    for img_vec in image_vectors
+]
+
+best_match_idx = np.argmax(similarities)
+print(f"Best match: {image_paths[best_match_idx]}")  # sunset.jpg
+print(f"Similarity score: {similarities[best_match_idx]:.3f}")
+```
+
+## Input Types
+
+Different input types optimize embeddings for specific use cases:
+
+```python
+# For indexing documents
+embeddings_doc = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    input_type="SEARCH_DOCUMENT",  # Default
+)
+
+# For search queries
+embeddings_query = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    input_type="SEARCH_QUERY",
+)
+```
+
+### Available Input Types
+
+| Input Type | Use Case | Example |
+|------------|----------|---------|
+| `SEARCH_DOCUMENT` | Documents being indexed | Product descriptions, articles |
+| `SEARCH_QUERY` | User search queries | "best laptop under $1000" |
+| `CLASSIFICATION` | Text classification | Sentiment analysis, topic detection |
+| `CLUSTERING` | Text clustering | Group similar documents |
+| `IMAGE` | Image inputs | Use `embed_image()` method instead |
+
+## Output Dimensions
+
+For `cohere.embed-v4.0`, you can control the output dimensions:
+
+```python
+# Larger vectors (more accurate, slower)
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-v4.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    dimensions=1536,  # Max: 1536
+)
+
+# Smaller vectors (faster, less storage)
+embeddings_small = OCIGenAIEmbeddings(
+    model_id="cohere.embed-v4.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    dimensions=256,  # Min: 256
+)
+```
+
+**Dimension Options:** 256, 384, 512, 768, 1024, 1536
+
+## Available Models
+
+| Model | Dimensions | Type | Best For |
+|-------|------------|------|----------|
+| `cohere.embed-english-v3.0` | 1024 | Text | English documents |
+| `cohere.embed-multilingual-v3.0` | 1024 | Text | Multiple languages |
+| `cohere.embed-english-light-v3.0` | 384 | Text | Fast English embeddings |
+| `cohere.embed-multilingual-light-v3.0` | 384 | Text | Fast multilingual |
+| `cohere.embed-v4.0` | 256-1536 | Text + Image | Multimodal applications |
+| `cohere.embed-english-image-v3.0` | 1024 | Text + Image | English multimodal |
+| `cohere.embed-multilingual-image-v3.0` | 1024 | Text + Image | Multilingual multimodal |
+
+> **Note:** Model availability varies by region. See the [OCI model catalog](https://docs.oracle.com/en-us/iaas/Content/generative-ai/pretrained-models.htm) for current offerings.
+
+## RAG Integration
+
+Use with LangChain's RAG components:
+
+```python
+from langchain_oci import OCIGenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# Initialize embeddings
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+
+# Split documents
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=1000,
+    chunk_overlap=200,
+)
+chunks = text_splitter.split_documents(documents)
+
+# Create vector store
+vectorstore = FAISS.from_documents(chunks, embeddings)
+
+# Search
+query = "What is machine learning?"
+results = vectorstore.similarity_search(query, k=3)
+
+for doc in results:
+    print(doc.page_content)
+```
+
+## Async Operations
+
+All embedding operations support async for production workloads:
+
+```python
+import asyncio
+from langchain_oci import OCIGenAIEmbeddings
+
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+)
+
+async def main():
+    # Async single query
+    query_vector = await embeddings.aembed_query("What is AI?")
+
+    # Async multiple documents
+    doc_vectors = await embeddings.aembed_documents([
+        "Document 1",
+        "Document 2",
+        "Document 3",
+    ])
+
+    print(f"Query dimensions: {len(query_vector)}")
+    print(f"Document vectors: {len(doc_vectors)}")
+
+asyncio.run(main())
+```
+
+## Truncation
+
+Control how text exceeding max token limits is handled:
+
+```python
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    truncate="END",  # "NONE", "START", "END" (default)
+)
+```
+
+| Truncate Mode | Behavior |
+|---------------|----------|
+| `NONE` | Raise error if text exceeds limit |
+| `START` | Truncate from beginning |
+| `END` | Truncate from end (default) |
+
+## Authentication Examples
+
+<CodeGroup>
+```python API Key
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="API_KEY",
+    auth_profile="DEFAULT",
+)
+```
+
+```python Security Token
+# Run: oci session authenticate --profile-name MY_PROFILE
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
     auth_type="SECURITY_TOKEN",
-    auth_profile="MY_PROFILE",  # replace with your profile name
-    auth_file_location="MY_CONFIG_FILE_LOCATION",  # replace with file location where profile name configs present
+    auth_profile="MY_PROFILE",
 )
-
-
-query = "This is a sample query"
-response = embeddings.embed_query(query)
-print(response)
-
-documents = ["This is a sample document", "and here is another one"]
-response = embeddings.embed_documents(documents)
-print(response)
 ```
+
+```python Instance Principal
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="INSTANCE_PRINCIPAL",
+)
+```
+
+```python Resource Principal
+embeddings = OCIGenAIEmbeddings(
+    model_id="cohere.embed-english-v3.0",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..xxx",
+    auth_type="RESOURCE_PRINCIPAL",
+)
+```
+</CodeGroup>
+
+## Error Handling
+
+```python
+from oci.exceptions import ServiceError
+
+try:
+    vector = embeddings.embed_query("What is AI?")
+except ServiceError as e:
+    if e.status == 401:
+        print("Authentication failed - check your credentials")
+    elif e.status == 404:
+        print("Model not found")
+    elif e.status == 429:
+        print("Rate limit exceeded")
+    else:
+        print(f"Error: {e.message}")
+```
+
+## API Reference
+
+For detailed documentation of all OCIGenAIEmbeddings features and configurations, see the [API reference](https://python.langchain.com/api_reference/oci/embeddings/langchain_oci.embeddings.oci_genai.OCIGenAIEmbeddings.html).
+
+## Related
+
+- [OCI Provider Overview](/oss/integrations/providers/oci)
+- [ChatOCIGenAI](/oss/integrations/chat/oci_generative_ai)
+- [Embeddings Guide](/oss/langchain/embeddings)
+- [RAG Tutorial](/oss/langchain/rag)
