@@ -15,7 +15,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | **Architecture** | Python SDK, TypeScript SDK, and CLI | Python SDK, TypeScript SDK | TypeScript SDK, CLI, desktop app, IDE extension, cloud interface |
 | **Deployment** | LangGraph Platform | Self-hosted | Prebuilt agent that can execute tasks |
 | **Frontend** | [Integration with React](https://docs.langchain.com/oss/javascript/langchain/streaming/frontend) | Server-side only | Server-side only |
-| **Observability** | LangSmith tracing & evaluations | - | OpenAI traces & command-line evaluations |
+| **Observability** | LangSmith tracing & evaluations | N/A | OpenAI traces & command-line evaluations |
 | **Security configurability** | Composable, per-tool human-in-the-loop | Permission system with modes, rules and hooks | Built-in tiers using approval modes and OS-level sandboxes |
 | **License** | MIT | MIT (underlying Claude Code is proprietary) | Apache-2.0 |
 
@@ -24,7 +24,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 **LangChain Deep Agents**:
 - **Model flexibility**: Swap model providers (Anthropic, OpenAI, or 100+ others) at any time and run evaluations.
 - **Long-term memory**: Persist context across sessions and threads with the [Memory Store](/oss/deepagents/long-term-memory)
-- **Sandbox-as-tool pattern**: Run individual operations in isolated sandboxes from different providers while the agent runs outside, or run the full agent inside a sandbox
+- **Sandbox-as-tool pattern**: Run individual operations in isolated sandboxes from [different providers](https://docs.langchain.com/oss/python/deepagents/sandboxes) while the agent runs outside, or run the full agent inside a sandbox
 - **Virtual filesystem**: Use pluggable backends (in-memory, disk, durable stores, sandboxes) for context and checkpoint management
 - **Production deployment**: Deploy via [LangSmith](/oss/langgraph/deploy) or self-host with the Agent Server
 - **Observability**: Use [LangSmith](/langsmith/home) for native tracing and debugging
@@ -62,7 +62,7 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 | Agent runs operations in sandboxes | ✅ [Uses sandboxes as tools](/oss/deepagents/sandboxes#sandbox-as-tool-pattern) | ❌ | ❌ |
 | OS-level sandbox modes | ❌ | ❌ | ✅ `read-only`, `workspace-write`, and `danger-full-access` |
 <tr><td colspan="4"><strong>Architecture</strong></td></tr>
-| Composable Middleware | ✅ | [Hooks](https://platform.claude.com/docs/en/agent-sdk/hooks) | ❌ |
+| Composable Middleware | ✅ | ✅ [Hooks](https://platform.claude.com/docs/en/agent-sdk/hooks) | ❌ |
 | Virtual Filesystems | ✅ [Virtual filesystem](/oss/deepagents/harness#virtual-filesystem-access) with [pluggable backends](/oss/deepagents/backends) | ❌ | ❌ |
 <tr><td colspan="4"><strong>Deployment</strong></td></tr>
 | Production hosting | ✅ [LangGraph Platform](/oss/langgraph/deploy), self-hosted, or standalone | Build your own HTTP/WebSocket layer; run SDK in [containers](https://platform.anthropic.com/docs/en/agent-sdk/hosting) | ❌ |
@@ -82,5 +82,5 @@ This page helps you understand how [LangChain Deep Agents](/oss/deepagents/overv
 
 ## Notice a mistake?
 
-We drafted this comparison on February 18th, 2026.
+We drafted this comparison on March 4th, 2026.
 If you notice mistakes or changes in products, please [file an issue](https://github.com/langchain-ai/docs/issues).
