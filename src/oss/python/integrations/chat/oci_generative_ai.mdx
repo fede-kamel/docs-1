@@ -150,7 +150,7 @@ J'adore la programmation.
 ### Multi-turn Conversations
 
 ```python
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain.messages import HumanMessage, AIMessage
 
 messages = [
     HumanMessage(content="Hi, I'm Alice."),
@@ -215,7 +215,7 @@ asyncio.run(main())
 Bind tools to enable function calling:
 
 ```python
-from langchain_core.tools import tool
+from langchain.tools import tool
 
 @tool
 def get_weather(city: str) -> str:
@@ -322,7 +322,7 @@ structured_llm = llm.with_structured_output(Contact, method="json_schema")
 ### Image Analysis
 
 ```python
-from langchain_core.messages import HumanMessage
+from langchain.messages import HumanMessage
 from langchain_oci import ChatOCIGenAI, load_image
 
 llm = ChatOCIGenAI(
@@ -381,7 +381,7 @@ Google Gemini models support PDF documents, video, and audio files:
 
 ```python
 import base64
-from langchain_core.messages import HumanMessage
+from langchain.messages import HumanMessage
 from langchain_oci import ChatOCIGenAI
 
 llm = ChatOCIGenAI(

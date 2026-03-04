@@ -163,7 +163,7 @@ vector = embeddings.embed_image("./photo.jpg")
 13+ vision-capable models across Meta Llama, Google Gemini, xAI Grok, and Cohere:
 
 ```python
-from langchain_core.messages import HumanMessage
+from langchain.messages import HumanMessage
 from langchain_oci import ChatOCIGenAI, load_image
 
 llm = ChatOCIGenAI(
@@ -186,7 +186,7 @@ response = llm.invoke([message])
 
 ```python
 import base64
-from langchain_core.messages import HumanMessage
+from langchain.messages import HumanMessage
 from langchain_oci import ChatOCIGenAI
 
 llm = ChatOCIGenAI(model_id="google.gemini-2.5-flash", ...)
@@ -206,7 +206,7 @@ message = HumanMessage(content=[
 Create LangGraph-powered ReAct agents with OCI models:
 
 ```python
-from langchain_core.tools import tool
+from langchain.tools import tool
 from langchain_oci import create_oci_agent
 
 @tool
@@ -222,7 +222,7 @@ agent = create_oci_agent(
     system_prompt="You are a helpful assistant.",
 )
 
-from langchain_core.messages import HumanMessage
+from langchain.messages import HumanMessage
 result = agent.invoke({
     "messages": [HumanMessage(content="Search for Python tutorials")]
 })
