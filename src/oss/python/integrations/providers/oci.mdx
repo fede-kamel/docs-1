@@ -49,9 +49,10 @@ oci session authenticate --profile-name MY_PROFILE
 ```python
 llm = ChatOCIGenAI(
     model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
     auth_type="SECURITY_TOKEN",
     auth_profile="MY_PROFILE",
-    # ... other params
 )
 ```
 
@@ -62,8 +63,9 @@ For applications running on OCI compute instances:
 ```python
 llm = ChatOCIGenAI(
     model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
     auth_type="INSTANCE_PRINCIPAL",
-    # ... other params
 )
 ```
 
@@ -74,8 +76,9 @@ For OCI Functions and other resources:
 ```python
 llm = ChatOCIGenAI(
     model_id="meta.llama-3.3-70b-instruct",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
     auth_type="RESOURCE_PRINCIPAL",
-    # ... other params
 )
 ```
 
@@ -121,8 +124,8 @@ from langchain_oci import ChatOCIOpenAI
 
 llm = ChatOCIOpenAI(
     model="openai.gpt-4.1",
-    compartment_id="ocid1.compartment.oc1..xxx",
-    # ... auth params
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
 )
 ```
 
@@ -195,19 +198,21 @@ import base64
 from langchain.messages import HumanMessage
 from langchain_oci import ChatOCIGenAI
 
-llm = ChatOCIGenAI(model_id="google.gemini-2.5-flash", ...)
+llm = ChatOCIGenAI(
+    model_id="google.gemini-2.5-flash",
+    service_endpoint="https://inference.generativeai.us-chicago-1.oci.oraclecloud.com",
+    compartment_id="ocid1.compartment.oc1..your-compartment-id",
+)
 
 # PDF processing - Extract structured data from contracts
 with open("vendor_contract.pdf", "rb") as f:
     pdf_data = base64.b64encode(f.read()).decode()
 
 message = HumanMessage(content=[
-    {"type": "text", "text": """
-    Extract key contract terms: parties, effective date, termination clauses,
-    payment terms, SLA commitments, and liability caps. Return as JSON.
-    """},
+    {"type": "text", "text": "Extract: parties, effective date, payment terms. Return as JSON."},
     {"type": "media", "data": pdf_data, "mime_type": "application/pdf"}
 ])
+response = llm.invoke([message])
 ```
 
 ### AI Agents
