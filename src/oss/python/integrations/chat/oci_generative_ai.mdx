@@ -308,7 +308,7 @@ with open("contract.pdf", "rb") as f:
 
 message = HumanMessage(content=[
     {"type": "text", "text": "Extract the contract parties, effective date, and payment terms as JSON."},
-    {"type": "media", "data": pdf_data, "mime_type": "application/pdf"}
+    {"type": "document_url", "document_url": {"url": f"data:application/pdf;base64,{pdf_data}"}}
 ])
 response = llm.invoke([message])
 print(response.content)
@@ -330,7 +330,7 @@ with open("meeting.mp4", "rb") as f:
 
 message = HumanMessage(content=[
     {"type": "text", "text": "List the action items and who is responsible for each."},
-    {"type": "media", "data": video_data, "mime_type": "video/mp4"}
+    {"type": "video_url", "video_url": {"url": f"data:video/mp4;base64,{video_data}"}}
 ])
 response = llm.invoke([message])
 ```
