@@ -201,11 +201,9 @@ browser_use_tool = HyperbrowserBrowserUseTool()
 agent = create_agent(model, [browser_use_tool])
 
 user_input = "Go to npmjs.com, and tell me when react package was last updated."
-for step in agent.stream(
-    {"messages": user_input},
-    stream_mode="values",
-):
-    step["messages"][-1].pretty_print()
+stream = agent.stream_events({"messages": user_input}, version="v3")
+for snapshot in stream.values:
+    snapshot["messages"][-1].pretty_print()
 ```
 
 ```text
@@ -247,16 +245,16 @@ For more details, see the respective API references:
 ## API reference
 
 - [GitHub](https://github.com/hyperbrowserai/langchain-hyperbrowser/)
-- [PyPi](https://pypi.org/project/langchain-hyperbrowser/)
+- [PyPI](https://pypi.org/project/langchain-hyperbrowser/)
 - [Hyperbrowser Docs](https://docs.hyperbrowser.ai/)
 
 ---
 
 <div className="source-links">
-<Callout icon="edit">
-    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/hyperbrowser_browser_agent_tools.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
-</Callout>
 <Callout icon="terminal-2">
     [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/hyperbrowser_browser_agent_tools.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

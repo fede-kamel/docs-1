@@ -33,6 +33,12 @@ const response = await model.invoke(messages);  // Returns AIMessage
 ```
 
 
+<Tip>
+Multi-turn [agents](/oss/javascript/langchain/agents) accumulate long message histories. [LangSmith](/langsmith/observability) records each turn, tool result, and model response so you can inspect the full conversation. Follow the [tracing quickstart](/langsmith/trace-with-langchain) to enable tracing.
+
+We recommend you also set up [LangSmith Engine](/langsmith/engine) which monitors your traces, detects issues, and proposes fixes.
+</Tip>
+
 ### Text prompts
 
 Text prompts are strings - ideal for straightforward generation tasks where you don't need to retain conversation history.
@@ -168,7 +174,7 @@ const humanMsg = new HumanMessage({
 
 
 <Note>
-    The `name` field behavior varies by provider – some use it for user identification, others ignore it. To check, refer to the model provider's [reference](https://reference.langchain.com/python/integrations/).
+    The `name` field behavior varies by provider—some use it for user identification, others ignore it. To check, refer to the model provider's [reference](https://reference.langchain.com/python/integrations/).
 </Note>
 
 ---
@@ -385,7 +391,7 @@ const response = await model.invoke(messages);  // Model processes the result
         ```
 
 
-        See the [RAG tutorial](/oss/javascript/langchain/rag) for an end-to-end example of building retrieval [agents](/oss/javascript/langchain/agents) with LangChain.
+        See the [RAG tutorial](/oss/javascript/deepagents/rag) for an end-to-end example of building retrieval [agents](/oss/javascript/langchain/agents) with LangChain.
     </Accordion>
 </Note>
 
@@ -530,8 +536,8 @@ it as output. Below we show short examples of input messages featuring multimoda
 <Note>
 Extra keys can be included top-level in the content block or nested in `"extras": {"key": value}`.
 
-[OpenAI](/oss/javascript/integrations/chat/openai#pdfs) and [AWS Bedrock Converse](/oss/javascript/integrations/chat/bedrock),
-for example, require a filename for PDFs. See the [provider page](/oss/javascript/integrations/providers/overview)
+[OpenAI](/oss/javascript/integrations/chat/openai),
+for example, requires a filename for PDFs. See the [provider page](/oss/javascript/integrations/providers/overview)
 for your chosen model for specifics.
 </Note>
 
@@ -558,6 +564,7 @@ for your chosen model for specifics.
         {
           type: "image",
           source_type: "base64",
+          mime_type: "image/jpeg",
           data: "AAAAIGZ0eXBtcDQyAAAAAGlzb21tcDQyAAACAGlzb2...",
         },
       ],
@@ -991,7 +998,7 @@ Content blocks are represented (either when creating a message or accessing the 
     </Accordion>
 </AccordionGroup>
 
-Each of these content blocks mentioned above are indvidually addressable as types when importing the [`ContentBlock`](https://reference.langchain.com/javascript/langchain-core/messages/ContentBlock) type.
+Each of these content blocks mentioned above are individually addressable as types when importing the [`ContentBlock`](https://reference.langchain.com/javascript/langchain-core/messages/ContentBlock) type.
 
 ```typescript
 import { ContentBlock } from "langchain";
@@ -1033,10 +1040,10 @@ Refer to the below guides to learn more:
 ---
 
 <div className="source-links">
-<Callout icon="edit">
-    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/messages.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
-</Callout>
 <Callout icon="terminal-2">
     [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/langchain/messages.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

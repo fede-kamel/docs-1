@@ -2,7 +2,7 @@
 title: Nimble Search
 ---
 
->[Nimble's Search API](https://docs.nimbleway.com/nimble-sdk/search-api) provides real-time web search by browsing the live web with headless browsers rather than querying pre-built indexes. The tool handles JavaScript rendering, dynamic content, and complex navigation flows, making it suitable for agent workflows that need access to current web data including content behind pagination, filters, and client-side rendering.
+>[Nimble's Search API](https://docs.nimbleway.com/nimble-sdk/search-api) provides real-time web search by browsing the live web with headless browsers rather than querying prebuilt indexes. The tool handles JavaScript rendering, dynamic content, and complex navigation flows, making it suitable for agent workflows that need access to current web data including content behind pagination, filters, and client-side rendering.
 
 ## Overview
 
@@ -10,7 +10,7 @@ title: Nimble Search
 
 | Class | Package | Serializable | JS support |  Package latest |
 | :--- | :--- | :---: | :---: | :---: |
-| [NimbleSearchTool](https://github.com/Nimbleway/langchain-nimble) | [langchain-nimble](https://pypi.org/project/langchain-nimble/) | ❌ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-nimble?style=flat-square&label=%20) |
+| [`NimbleSearchTool`](https://github.com/Nimbleway/langchain-nimble) | [`langchain-nimble`](https://pypi.org/project/langchain-nimble/) | ❌ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-nimble?style=flat-square&label=%20) |
 
 ### Tool features
 
@@ -94,11 +94,9 @@ agent = create_agent(model, [nimble_tool])
 # Ask the agent a question that requires web search
 user_input = "What are the latest developments in quantum computing? Include only sources from academic institutions and reputable tech publications."
 
-for step in agent.stream(
-    {"messages": user_input},
-    stream_mode="values",
-):
-    step["messages"][-1].pretty_print()
+stream = agent.stream_events({"messages": user_input}, version="v3")
+for snapshot in stream.values:
+    snapshot["messages"][-1].pretty_print()
 ```
 
 ```output
@@ -193,10 +191,10 @@ For detailed documentation of all `NimbleSearchRetriever` features and configura
 ---
 
 <div className="source-links">
-<Callout icon="edit">
-    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/nimble_search.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
-</Callout>
 <Callout icon="terminal-2">
     [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/nimble_search.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

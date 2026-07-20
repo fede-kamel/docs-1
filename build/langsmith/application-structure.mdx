@@ -237,19 +237,21 @@ To deploy with LangSmith, you need:
 
 In this example, the node functions (`my_app_node` for Python and `myAppNode` for JavaScript) can contain calls to any framework or library. The LangGraph structure simply provides the deployment interface and orchestration layer.
 
+For end-to-end examples, refer to the deployment guides for [Google ADK](/langsmith/deploy-google-adk) and [Claude Agent SDK, Strands, CrewAI, and AutoGen](/langsmith/deploy-other-frameworks). LangSmith added support for Google ADK through [`deployments-wrap-sdk`](https://pypi.org/project/deployments-wrap-sdk/), an extensible package for wrapping agent SDKs to run on LangSmith Deployment.
+
 ## Environment variables
 
-If you're working with a deployed LangGraph application [locally](/langsmith/local-server), you can configure environment variables in the `env` key of the [configuration file](#configuration-file-concepts).
+If you're working with a deployed LangGraph application [locally](/langsmith/local-dev-testing), you can configure environment variables in the `env` key of the [configuration file](#configuration-file-concepts).
 
 For a production deployment, you will typically want to configure the environment variables in the deployment environment.
 
 ---
 
 <div className="source-links">
-<Callout icon="edit">
-    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/application-structure.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
-</Callout>
 <Callout icon="terminal-2">
     [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/application-structure.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

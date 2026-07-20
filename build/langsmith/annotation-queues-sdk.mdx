@@ -11,6 +11,10 @@ Use the LangSmith SDK to manage feedback configurations and [annotation queue](/
 This guide uses the Python and TypeScript SDKs. For installation and setup, refer to the [Python SDK documentation](https://reference.langchain.com/python/langsmith) and [TypeScript SDK documentation](https://reference.langchain.com/javascript/modules/langsmith.html).
 </Callout>
 
+<Note>
+To write free-form acceptance criteria on individual runs while reviewing in the [LangSmith UI](https://smith.langchain.com?utm_source=docs&utm_medium=cta&utm_campaign=langsmith-signup&utm_content=langsmith-annotation-queues-sdk), refer to [Use assertions](/langsmith/assertions).
+</Note>
+
 ## Feedback layers
 
 LangSmith uses a three-layer architecture for structured human feedback:
@@ -23,7 +27,7 @@ LangSmith uses a three-layer architecture for structured human feedback:
 
 ### Create a feedback config
 
-Feedback configs define the schema for a feedback key — whether it's a continuous score, a categorical choice, or freeform text. A unique key identifies each config within your organization and specifies how annotators can submit feedback for that metric.
+Feedback configs define the schema for a feedback key—whether it's a continuous score, a categorical choice, or freeform text. A unique key identifies each config within your organization and specifies how annotators can submit feedback for that metric.
 
 <Note>
 Calling [`create_feedback_config`](https://reference.langchain.com/python/langsmith/client/Client/create_feedback_config) with an identical config that already exists returns the existing config. If a different config already exists for the same key, the system raises a 400 error.
@@ -444,10 +448,10 @@ await client.createFeedbackConfig({
 ---
 
 <div className="source-links">
-<Callout icon="edit">
-    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/annotation-queues-sdk.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
-</Callout>
 <Callout icon="terminal-2">
     [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/langsmith/annotation-queues-sdk.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>

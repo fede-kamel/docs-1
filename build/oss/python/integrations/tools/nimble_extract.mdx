@@ -10,7 +10,7 @@ title: Nimble Extract
 
 | Class | Package | Serializable | JS support |  Package latest |
 | :--- | :--- | :---: | :---: | :---: |
-| [NimbleExtractTool](https://github.com/Nimbleway/langchain-nimble) | [langchain-nimble](https://pypi.org/project/langchain-nimble/) | ❌ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-nimble?style=flat-square&label=%20) |
+| [`NimbleExtractTool`](https://github.com/Nimbleway/langchain-nimble) | [`langchain-nimble`](https://pypi.org/project/langchain-nimble/) | ❌ | ❌ | ![PyPI - Version](https://img.shields.io/pypi/v/langchain-nimble?style=flat-square&label=%20) |
 
 ### Tool features
 
@@ -92,11 +92,9 @@ agent = create_agent(model, [extract_tool])
 # Ask the agent to extract and analyze content from LangChain documentation
 user_input = "Extract and summarize the key concepts from these LangChain docs: https://python.langchain.com/docs/concepts/retrievers/, https://python.langchain.com/docs/concepts/tools/"
 
-for step in agent.stream(
-    {"messages": user_input},
-    stream_mode="values",
-):
-    step["messages"][-1].pretty_print()
+stream = agent.stream_events({"messages": user_input}, version="v3")
+for snapshot in stream.values:
+    snapshot["messages"][-1].pretty_print()
 ```
 
 ```output
@@ -185,10 +183,10 @@ For detailed documentation of all `NimbleExtractTool` features and configuration
 ---
 
 <div className="source-links">
-<Callout icon="edit">
-    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/nimble_extract.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
-</Callout>
 <Callout icon="terminal-2">
     [Connect these docs](/use-these-docs) to Claude, VSCode, and more via MCP for real-time answers.
+</Callout>
+<Callout icon="edit">
+    [Edit this page on GitHub](https://github.com/langchain-ai/docs/edit/main/src/oss/python/integrations/tools/nimble_extract.mdx) or [file an issue](https://github.com/langchain-ai/docs/issues/new/choose).
 </Callout>
 </div>
